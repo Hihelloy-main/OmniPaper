@@ -37,7 +37,3 @@ for (name in listOf("omnipaper-api", "omnipaper-server")) {
     val projName = name.lowercase(Locale.ENGLISH)
     include(projName)
 }
-
-// Include generated paper-api so omnipaper-api can depend on it
-include("paper-api")
-project(":paper-api").projectDir = file("paper-api")
