@@ -125,7 +125,7 @@ if (project.providers.gradleProperty("publishDevBundle").isPresent) {
 // OmniPaper start - project setup
 sourceSets {
     main {
-        java { srcDir("../paper-server/src/main/java") }
+        java { srcDir("../paper-server/src/main/java"); srcDir("../paper-server/src/generated/java") }
         resources { srcDir("../paper-server/src/main/resources") }
     }
     test {
