@@ -53,11 +53,6 @@ paperweight {
             outputFile = file("omnipaper-server/build.gradle.kts")
             patchFile = file("omnipaper-server/build.gradle.kts.patch")
         }
-        patchFile {
-            path = "paper-api/build.gradle.kts"
-            outputFile = file("omnipaper-api/build.gradle.kts")
-            patchFile = file("omnipaper-api/build.gradle.kts.patch")
-        }
         patchDir("paperApi") {
             upstreamPath = "paper-api"
             excludes = setOf("build.gradle.kts")

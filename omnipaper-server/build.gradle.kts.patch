@@ -1,70 +1,16 @@
 --- a/paper-server/build.gradle.kts
 +++ b/paper-server/build.gradle.kts
-@@ -12,7 +_,7 @@
- }
- 
- val paperMavenPublicUrl = "https://repo.papermc.io/repository/maven-public/"
--// end of header
-+// OmniPaper - project setup
- 
- dependencies {
-     mache("io.papermc:mache:1.21.11+build.1")
-@@ -21,6 +_,20 @@
- paperweight {
-     minecraftVersion = providers.gradleProperty("mcVersion")
-     gitFilePatches = false
-+
-+    // OmniPaper start - project setup
-+    val omnipaper = forks.register("omnipaper") {
-+        upstream.patchDir("paperServer") {
-+            upstreamPath = "paper-server"
-+            excludes = setOf("src/minecraft", "patches", "build.gradle.kts")
-+            patchesDir = rootDirectory.dir("omnipaper-server/paper-patches")
-+            outputDir = rootDirectory.dir("paper-server")
-+        }
-+    }
-+
-+    activeFork = omnipaper
-+    // OmniPaper end - project setup
- 
-     spigot {
-         enabled = true
-@@ -104,6 +_,22 @@
-     }
- }
- 
-+// OmniPaper start - project setup: point sourceSets at paper-server
-+sourceSets {
-+    main {
-+        java { srcDir("../paper-server/src/main/java") }
-+        resources { srcDir("../paper-server/src/main/resources") }
-+    }
-+    test {
-+        java { srcDir("../paper-server/src/test/java") }
-+        resources { srcDir("../paper-server/src/test/resources") }
-+    }
-+}
-+
- val log4jPlugins = sourceSets.create("log4jPlugins") {
-+    java { srcDir("../paper-server/src/log4jPlugins/java") }
-+}
-+// OmniPaper end - project setup
-+
-+val log4jPluginsOriginal = sourceSets.create("log4jPluginsLegacy")
--val log4jPlugins = sourceSets.create("log4jPlugins")
- configurations.named(log4jPlugins.compileClasspathConfigurationName) {
-     extendsFrom(configurations.compileClasspath.get())
- }
-@@ -127,7 +_,9 @@
+@@ -127,7 +127,7 @@
  }
  
  dependencies {
 -    implementation(project(":paper-api"))
-+    implementation(project(":omnipaper-api")) // OmniPaper - project setup
-+
++    implementation(project(":omnipaper-api")) // OmniPaper - use omnipaper-api
      implementation("ca.spottedleaf:concurrentutil:0.0.8")
-     implementation("org.jline:jline-terminal-ffm:3.27.1")
-@@ -200,10 +_,10 @@
+     implementation("org.jline:jline-terminal-ffm:3.27.1") // use ffm on java 22+
+     implementation("org.jline:jline-terminal-jni:3.27.1") // fall back to jni on java 21
+@@ -198,14 +198,14 @@
+         val gitBranch = git.exec(providers, "rev-parse", "--abbrev-ref", "HEAD").get().trim()
          attributes(
              "Main-Class" to "org.bukkit.craftbukkit.Main",
 -            "Implementation-Title" to "Paper",
@@ -81,3 +27,5 @@
 +            "Brand-Id" to "omnipaper:omnipaper", // OmniPaper - rebrand
 +            "Brand-Name" to "OmniPaper", // OmniPaper - rebrand
              "Build-Number" to (build ?: ""),
+             "Build-Time" to buildTime.toString(),
+             "Git-Branch" to gitBranch,
