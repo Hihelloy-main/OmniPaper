@@ -6,7 +6,6 @@ Subject: [PATCH] OmniPaper - Paw optimization
 Some random optimizations
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/block/data/CraftBlockData.java b/src/main/java/org/bukkit/craftbukkit/block/data/CraftBlockData.java
-index 68bb1b85227390aa29e4214bbc3d97dac1517534..6e896026a98f95c185e53892ec730999fd31ca4c 100644
 --- a/src/main/java/org/bukkit/craftbukkit/block/data/CraftBlockData.java
 +++ b/src/main/java/org/bukkit/craftbukkit/block/data/CraftBlockData.java
 @@ -244,13 +244,37 @@ public class CraftBlockData implements BlockData {

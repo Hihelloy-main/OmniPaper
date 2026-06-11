@@ -10,7 +10,6 @@ As part of: Lithium (https://github.com/CaffeineMC/lithium)
 Licensed under: LGPL-3.0-only (https://www.gnu.org/licenses/lgpl-3.0.html)
 
 diff --git a/net/minecraft/world/level/chunk/HashMapPalette.java b/net/minecraft/world/level/chunk/HashMapPalette.java
-index 5b9346b25aa01db9f3c36e243f46846b87a6eb75..2d73bddc6375584d1594acd8c48ee3502a89c2b4 100644
 --- a/net/minecraft/world/level/chunk/HashMapPalette.java
 +++ b/net/minecraft/world/level/chunk/HashMapPalette.java
 @@ -14,7 +14,7 @@ public class HashMapPalette<T> implements Palette<T>, ca.spottedleaf.moonrise.pa
@@ -38,7 +37,6 @@ index 5b9346b25aa01db9f3c36e243f46846b87a6eb75..2d73bddc6375584d1594acd8c48ee350
          this.bits = bits;
          this.values = values;
 diff --git a/net/minecraft/world/level/chunk/Strategy.java b/net/minecraft/world/level/chunk/Strategy.java
-index 787f5173425f617a89033e5b76256688be36b31d..a08756342f3cdb3a1188b2e6e56c59c4742db0d1 100644
 --- a/net/minecraft/world/level/chunk/Strategy.java
 +++ b/net/minecraft/world/level/chunk/Strategy.java
 @@ -4,6 +4,15 @@ import net.minecraft.core.IdMap;

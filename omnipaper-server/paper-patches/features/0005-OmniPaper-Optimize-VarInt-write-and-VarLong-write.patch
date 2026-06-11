@@ -21,7 +21,6 @@ Given that we do a lot of varint writing as well, this should provide a small pe
 This includes a test to ensure that the behavior is as expected and fixes the initialization loop so that the correct results will be given. Much thanks to @octylFractal for acting as my duck while trying to figure this out.
 
 diff --git a/src/test/java/net/minecraft/network/VarIntLongTest.java b/src/test/java/net/minecraft/network/VarIntLongTest.java
-index 04959045a14ccdce3f836e43e270bcf3349b28bb..96853a1db7998e68cb0404eb1c339e807cfd339e 100644
 --- a/src/test/java/net/minecraft/network/VarIntLongTest.java
 +++ b/src/test/java/net/minecraft/network/VarIntLongTest.java
 @@ -2,6 +2,7 @@

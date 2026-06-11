@@ -5,7 +5,6 @@ Subject: [PATCH] OmniPaper - optimize FluidState#is(TagKey)
 
 
 diff --git a/net/minecraft/world/level/material/FluidState.java b/net/minecraft/world/level/material/FluidState.java
-index 3e5ada4a84bc1da06102dfacb0d3d45a4fc6db8a..4a39a9b6401d615047d4573b3cc64a3e7361d89b 100644
 --- a/net/minecraft/world/level/material/FluidState.java
 +++ b/net/minecraft/world/level/material/FluidState.java
 @@ -130,7 +130,16 @@ public final class FluidState extends StateHolder<Fluid, FluidState> implements

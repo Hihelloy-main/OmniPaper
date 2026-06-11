@@ -37,7 +37,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 diff --git a/net/minecraft/server/network/ServerCommonPacketListenerImpl.java b/net/minecraft/server/network/ServerCommonPacketListenerImpl.java
-index d5bf3b49d34a04294c92a5b5b5d2de290642fc5e..58aefee3d3393932c7bf0e43e77e22485fbd7320 100644
 --- a/net/minecraft/server/network/ServerCommonPacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerCommonPacketListenerImpl.java
 @@ -40,10 +40,11 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack

@@ -6,7 +6,6 @@ Subject: [PATCH] OmniPaper - Optimize pushable selector
 Avoid duplicated Bukkit#isPushable check, already checked inside the Bukkit#canCollideWithBukkit
 
 diff --git a/net/minecraft/world/entity/EntitySelector.java b/net/minecraft/world/entity/EntitySelector.java
-index a0d23f7c733c315a021e8b2ba8968f41807159a4..27dc55aa3c2c18a9ade591cf094216736049a44c 100644
 --- a/net/minecraft/world/entity/EntitySelector.java
 +++ b/net/minecraft/world/entity/EntitySelector.java
 @@ -48,10 +48,9 @@ public final class EntitySelector {

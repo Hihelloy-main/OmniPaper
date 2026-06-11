@@ -7,7 +7,6 @@ Use simplified and more efficient supplier.
 Must be checked every MC update to make sure the supplier reference lifecycle won't get leaked and be reused in the next loop.
 
 diff --git a/net/minecraft/world/inventory/AbstractContainerMenu.java b/net/minecraft/world/inventory/AbstractContainerMenu.java
-index 3a0c8dca827f567a00e611461aeb74699155bffb..d3ff6d078485e12eaa68e6d4f1bc21ae30de20f1 100644
 --- a/net/minecraft/world/inventory/AbstractContainerMenu.java
 +++ b/net/minecraft/world/inventory/AbstractContainerMenu.java
 @@ -262,12 +262,15 @@ public abstract class AbstractContainerMenu {

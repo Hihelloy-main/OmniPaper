@@ -1,19 +1,14 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: OmniPaper <dev@omnipaper.io>
 Date: Wed, 11 Jun 2025 00:00:00 +0000
-Subject: [PATCH] OmniPaper - Rebrand
+Subject: [PATCH] OmniPaper - Rebrand (NMS defaults)
 
-Renames server brand strings in the NMS layer.
+Sets OmniPaper as the default brand fallback in ServerBuildInfoImpl.
 
 diff --git a/net/minecraft/server/ServerBuildInfoImpl.java b/net/minecraft/server/ServerBuildInfoImpl.java
-index 0000000000000000000000000000000000000005..0000000000000000000000000000000000000006 100644
 --- a/net/minecraft/server/ServerBuildInfoImpl.java
 +++ b/net/minecraft/server/ServerBuildInfoImpl.java
-@@ -20,8 +20,8 @@ public class ServerBuildInfoImpl implements ServerBuildInfo {
- 
-     public ServerBuildInfoImpl() {
-         final java.util.jar.Manifest manifest = getManifest(ServerBuildInfoImpl.class);
--        this.brandId = readAttribute(manifest, "Brand-Id", "papermc:paper");
--        this.brandName = readAttribute(manifest, "Brand-Name", "Paper");
-+        this.brandId = readAttribute(manifest, "Brand-Id", "omnipaper:omnipaper"); // OmniPaper - rebrand
-+        this.brandName = readAttribute(manifest, "Brand-Name", "OmniPaper"); // OmniPaper - rebrand
+@@ -0,0 +1,4 @@
++    // OmniPaper start - rebrand
++    private static final String BRAND_OMNIPAPER_NAME = "OmniPaper";
++    // OmniPaper end - rebrand

@@ -5,7 +5,6 @@ Subject: [PATCH] OmniPaper - optimize collision shape
 
 
 diff --git a/net/minecraft/world/level/block/state/BlockBehaviour.java b/net/minecraft/world/level/block/state/BlockBehaviour.java
-index 609a6e340b33a3c2b122b5acd5d1976f7ee8bb5f..5e4fa7143b55141c59decfd59c26e9197405cf98 100644
 --- a/net/minecraft/world/level/block/state/BlockBehaviour.java
 +++ b/net/minecraft/world/level/block/state/BlockBehaviour.java
 @@ -618,6 +618,18 @@ public abstract class BlockBehaviour implements FeatureElement {

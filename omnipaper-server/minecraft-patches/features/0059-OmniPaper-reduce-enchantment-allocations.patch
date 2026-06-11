@@ -6,7 +6,6 @@ Subject: [PATCH] OmniPaper - reduce enchantment allocations
 reduce allocation of creating entity loot contexts and unmodifiable set boxing
 
 diff --git a/net/minecraft/world/item/enchantment/Enchantment.java b/net/minecraft/world/item/enchantment/Enchantment.java
-index 05d9626aec8b66f5b02e875ad60b853d15c0e02a..960bbeb6854556ff25962a16240fcb95db40236f 100644
 --- a/net/minecraft/world/item/enchantment/Enchantment.java
 +++ b/net/minecraft/world/item/enchantment/Enchantment.java
 @@ -202,9 +202,15 @@ public record Enchantment(Component description, Enchantment.EnchantmentDefiniti
@@ -43,7 +42,6 @@ index 05d9626aec8b66f5b02e875ad60b853d15c0e02a..960bbeb6854556ff25962a16240fcb95
              enchantmentEntityEffect -> enchantmentEntityEffect.apply(level, enchantmentLevel, item, entity, entity.position())
          );
 diff --git a/net/minecraft/world/item/enchantment/EnchantmentHelper.java b/net/minecraft/world/item/enchantment/EnchantmentHelper.java
-index 373e3b9017433939512493558b4e0fe32a865b56..2677f911d33441b3d0eacc703a372de05d89acf1 100644
 --- a/net/minecraft/world/item/enchantment/EnchantmentHelper.java
 +++ b/net/minecraft/world/item/enchantment/EnchantmentHelper.java
 @@ -131,7 +131,7 @@ public class EnchantmentHelper {
@@ -65,7 +63,6 @@ index 373e3b9017433939512493558b4e0fe32a865b56..2677f911d33441b3d0eacc703a372de0
                      if (holder.value().matchingSlot(slot)) {
                          visitor.accept(holder, entry.getIntValue(), enchantedItemInUse);
 diff --git a/net/minecraft/world/item/enchantment/ItemEnchantments.java b/net/minecraft/world/item/enchantment/ItemEnchantments.java
-index b666181af7d6663f2fce58a7d9a4c805687f5409..5de7356f0375f9acf772ef457c477de0539fd092 100644
 --- a/net/minecraft/world/item/enchantment/ItemEnchantments.java
 +++ b/net/minecraft/world/item/enchantment/ItemEnchantments.java
 @@ -99,6 +99,12 @@ public class ItemEnchantments implements TooltipProvider {

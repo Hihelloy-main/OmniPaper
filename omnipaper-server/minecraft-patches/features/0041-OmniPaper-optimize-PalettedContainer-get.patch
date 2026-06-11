@@ -5,7 +5,6 @@ Subject: [PATCH] OmniPaper - optimize PalettedContainer#get
 
 
 diff --git a/net/minecraft/world/level/chunk/PalettedContainer.java b/net/minecraft/world/level/chunk/PalettedContainer.java
-index 7c8f8772a6fba04dbafdb5dbf8098b6ebce6d6f2..07355d76cdb162b2d200c230e2511aca18babed3 100644
 --- a/net/minecraft/world/level/chunk/PalettedContainer.java
 +++ b/net/minecraft/world/level/chunk/PalettedContainer.java
 @@ -29,6 +29,18 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer

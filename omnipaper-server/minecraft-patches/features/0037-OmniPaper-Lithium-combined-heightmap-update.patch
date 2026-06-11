@@ -12,7 +12,6 @@ As part of: Lithium (https://github.com/CaffeineMC/lithium)
 Licensed under: LGPL-3.0-only (https://www.gnu.org/licenses/lgpl-3.0.html)
 
 diff --git a/net/minecraft/world/level/chunk/LevelChunk.java b/net/minecraft/world/level/chunk/LevelChunk.java
-index 6d22eead50e76c53cee73e2af87d95c2a4cad393..fcd5694a890788b3b6f106478ab1944153ebe732 100644
 --- a/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/net/minecraft/world/level/chunk/LevelChunk.java
 @@ -432,10 +432,13 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot
@@ -34,7 +33,6 @@ index 6d22eead50e76c53cee73e2af87d95c2a4cad393..fcd5694a890788b3b6f106478ab19441
                  if (hasOnlyAir != hasOnlyAir1) {
                      this.level.getChunkSource().getLightEngine().updateSectionStatus(pos, hasOnlyAir1);
 diff --git a/net/minecraft/world/level/levelgen/Heightmap.java b/net/minecraft/world/level/levelgen/Heightmap.java
-index 25c537496ccea6fe27111b21fe2e47b3f6a914a1..ec747d8404de3f0820133ce68c5e7b9907d7f332 100644
 --- a/net/minecraft/world/level/levelgen/Heightmap.java
 +++ b/net/minecraft/world/level/levelgen/Heightmap.java
 @@ -40,6 +40,12 @@ public class Heightmap {

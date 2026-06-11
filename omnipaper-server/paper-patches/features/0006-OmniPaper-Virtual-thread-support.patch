@@ -7,7 +7,6 @@ License: GPL-3.0-only (https://www.gnu.org/licenses/gpl-3.0.html)
 Gale - https://galemc.org
 
 diff --git a/src/main/java/com/destroystokyo/paper/Metrics.java b/src/main/java/com/destroystokyo/paper/Metrics.java
-index 56eb76c84aa1ff6af2aaff57798f08f3b1837c57..bfec7d2d24d8f175f00610b6fa6406544d9b46de 100644
 --- a/src/main/java/com/destroystokyo/paper/Metrics.java
 +++ b/src/main/java/com/destroystokyo/paper/Metrics.java
 @@ -970,6 +970,19 @@ public class Metrics {

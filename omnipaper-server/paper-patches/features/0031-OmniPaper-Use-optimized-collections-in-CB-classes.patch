@@ -5,7 +5,6 @@ Subject: [PATCH] OmniPaper - Use optimized collections in CB classes
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftBlockStates.java b/src/main/java/org/bukkit/craftbukkit/block/CraftBlockStates.java
-index ac56dbb9db9b49cd856f2e2567a7ac1be55293ef..116750abadb9102c309a6bf558a8d6047e2eda53 100644
 --- a/src/main/java/org/bukkit/craftbukkit/block/CraftBlockStates.java
 +++ b/src/main/java/org/bukkit/craftbukkit/block/CraftBlockStates.java
 @@ -68,7 +68,7 @@ public final class CraftBlockStates {
@@ -27,7 +26,6 @@ index ac56dbb9db9b49cd856f2e2567a7ac1be55293ef..116750abadb9102c309a6bf558a8d604
          FACTORIES_BY_BLOCK_ENTITY_TYPE.put(type, factory);
      }
 diff --git a/src/main/java/org/bukkit/craftbukkit/boss/CraftBossBar.java b/src/main/java/org/bukkit/craftbukkit/boss/CraftBossBar.java
-index 8430d131bbc12e730b3d3ea16a152fcd6488a697..cc3dbe4f6ec338a2552b9496234415139510e8e2 100644
 --- a/src/main/java/org/bukkit/craftbukkit/boss/CraftBossBar.java
 +++ b/src/main/java/org/bukkit/craftbukkit/boss/CraftBossBar.java
 @@ -47,7 +47,7 @@ public class CraftBossBar implements BossBar {
@@ -40,7 +38,6 @@ index 8430d131bbc12e730b3d3ea16a152fcd6488a697..cc3dbe4f6ec338a2552b949623441513
          this.flags.put(BarFlag.PLAY_BOSS_MUSIC, new FlagContainer(this.handle::shouldPlayBossMusic, this.handle::setPlayBossMusic));
          this.flags.put(BarFlag.CREATE_FOG, new FlagContainer(this.handle::shouldCreateWorldFog, this.handle::setCreateWorldFog));
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntityTypes.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntityTypes.java
-index db1a81d0661305acdf22a9a8ff07ef12ae1d7003..8107780ce4950c37cf2bfddd50604a4e27cb05b8 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntityTypes.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntityTypes.java
 @@ -271,8 +271,10 @@ public final class CraftEntityTypes {
@@ -57,7 +54,6 @@ index db1a81d0661305acdf22a9a8ff07ef12ae1d7003..8107780ce4950c37cf2bfddd50604a4e
      static {
          // Living
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/util/CraftInventoryCreator.java b/src/main/java/org/bukkit/craftbukkit/inventory/util/CraftInventoryCreator.java
-index a456cc637e2a990354852d8537787af9cd7eb670..82938d46c8e01461337aab483a9718e2679ddf7c 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/util/CraftInventoryCreator.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/util/CraftInventoryCreator.java
 @@ -11,7 +11,7 @@ public final class CraftInventoryCreator {
@@ -70,7 +66,6 @@ index a456cc637e2a990354852d8537787af9cd7eb670..82938d46c8e01461337aab483a9718e2
      private CraftInventoryCreator() {
          this.converterMap.put(InventoryType.CHEST, this.defaultConverter);
 diff --git a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
-index 00fb0d0e2c8a0bc1a254505cac5404a4423a525f..791429f1dc6157cd547e195f3390ce5ce0a98901 100644
 --- a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
 +++ b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
 @@ -162,10 +162,12 @@ public final class CraftMagicNumbers implements UnsafeValues {

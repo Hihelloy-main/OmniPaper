@@ -3,16 +3,10 @@ From: OmniPaper <dev@omnipaper.io>
 Date: Wed, 11 Jun 2025 00:00:00 +0000
 Subject: [PATCH] OmniPaper - Rebrand (Paper layer)
 
-Rebrand strings in CraftBukkit/Paper sources.
-
 diff --git a/src/main/java/io/papermc/paper/ServerBuildInfoImpl.java b/src/main/java/io/papermc/paper/ServerBuildInfoImpl.java
-index 0000000000000000000000000000000000000001..0000000000000000000000000000000000000002 100644
 --- a/src/main/java/io/papermc/paper/ServerBuildInfoImpl.java
 +++ b/src/main/java/io/papermc/paper/ServerBuildInfoImpl.java
-@@ -19,8 +19,10 @@ public class ServerBuildInfoImpl implements ServerBuildInfo {
-     @Override
-     public boolean isBrandCompatible(final Key brandId) {
-         return brandId.equals(BRAND_PAPER_ID)
-+            || brandId.equals(BRAND_OMNIPAPER_ID) // OmniPaper - rebrand
-             || brandId.equals(BRAND_PURPUR_ID);
-     }
+@@ -0,0 +1,0 @@ public record ServerBuildInfoImpl(
++    // OmniPaper start - rebrand
++    private static final String BRAND_OMNIPAPER_NAME = "OmniPaper";
++    // OmniPaper end - rebrand

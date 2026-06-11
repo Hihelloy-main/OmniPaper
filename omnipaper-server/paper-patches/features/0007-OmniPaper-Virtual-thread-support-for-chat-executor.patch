@@ -5,7 +5,6 @@ Subject: [PATCH] OmniPaper - Virtual thread support for chat executor
 
 
 diff --git a/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java b/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
-index cc1906ef871de6a4ff82039d8ddfcd764139f37d..801a3810feb0aed0eb9f440f5fbe65bf6deb59fd 100644
 --- a/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
 +++ b/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
 @@ -325,9 +325,11 @@ public class GlobalConfiguration extends ConfigurationPart {

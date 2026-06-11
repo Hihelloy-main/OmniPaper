@@ -19,7 +19,6 @@ As part of: Lithium (https://github.com/CaffeineMC/lithium)
 Licensed under: LGPL-3.0-only (https://www.gnu.org/licenses/lgpl-3.0.html)
 
 diff --git a/net/minecraft/world/level/levelgen/NoiseBasedChunkGenerator.java b/net/minecraft/world/level/levelgen/NoiseBasedChunkGenerator.java
-index d1068a122e5dbd5af274d0f8178ca9f5fa49f930..39705af4ec320213afce2b2c5c326a712aa5eba2 100644
 --- a/net/minecraft/world/level/levelgen/NoiseBasedChunkGenerator.java
 +++ b/net/minecraft/world/level/levelgen/NoiseBasedChunkGenerator.java
 @@ -59,6 +59,7 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {

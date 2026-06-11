@@ -31,7 +31,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 diff --git a/io/papermc/paper/entity/activation/ActivationRange.java b/io/papermc/paper/entity/activation/ActivationRange.java
-index bc62da127a01b33ce8fc0f958bc232d6287d57ec..c84def1bb0632f64cfe76f7cd18273e0b4789187 100644
 --- a/io/papermc/paper/entity/activation/ActivationRange.java
 +++ b/io/papermc/paper/entity/activation/ActivationRange.java
 @@ -223,7 +223,7 @@ public final class ActivationRange {
@@ -44,7 +43,6 @@ index bc62da127a01b33ce8fc0f958bc232d6287d57ec..c84def1bb0632f64cfe76f7cd18273e0
              }
              if (entity instanceof final Mob mob && mob.getTarget() != null) {
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index 9a531c7b8286d88d4e97c251faa9a7f6e3647a2f..3ab221f4ac4f1860bf9b4c134b20fda8ca049ff1 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -2249,6 +2249,21 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin

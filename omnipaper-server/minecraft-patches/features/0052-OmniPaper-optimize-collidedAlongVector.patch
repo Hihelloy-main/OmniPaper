@@ -5,7 +5,6 @@ Subject: [PATCH] OmniPaper - optimize collidedAlongVector
 
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index b5c0fc476d74f77a67e5285f89e3337b94f8a6f8..c8f49cf10ab9240fcea0508e67ae815aaf33508a 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -1820,7 +1820,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
@@ -50,7 +49,6 @@ index b5c0fc476d74f77a67e5285f89e3337b94f8a6f8..c8f49cf10ab9240fcea0508e67ae815a
      }
  
 diff --git a/net/minecraft/world/entity/monster/Ghast.java b/net/minecraft/world/entity/monster/Ghast.java
-index d6ff0c24d020942a5ed1e2b0b046d4d043ff33af..3ab0aba57ed3282eb73fc501ded00558ec3d772a 100644
 --- a/net/minecraft/world/entity/monster/Ghast.java
 +++ b/net/minecraft/world/entity/monster/Ghast.java
 @@ -358,7 +358,7 @@ public class Ghast extends Mob implements Enemy {
@@ -63,7 +61,6 @@ index d6ff0c24d020942a5ed1e2b0b046d4d043ff33af..3ab0aba57ed3282eb73fc501ded00558
                  if (!this.careful) {
                      return flag1;
 diff --git a/net/minecraft/world/phys/AABB.java b/net/minecraft/world/phys/AABB.java
-index 764ede4beeebf17518bef2409565944cf5f6e149..e7bb2b606adf45feab8ec50fb6fca5191346646f 100644
 --- a/net/minecraft/world/phys/AABB.java
 +++ b/net/minecraft/world/phys/AABB.java
 @@ -406,21 +406,34 @@ public class AABB {

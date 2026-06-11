@@ -14,7 +14,6 @@ I have replaced the unconditional normalization with a conditional check based o
 `length()`, `normalize()`, and `scale()` calls entirely.
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index b6df8276b4f8d021a819a01444e30e37c13a81b5..c02c7967909207e4803899b17d68d7fbd857cbd8 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -1262,8 +1262,15 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name

@@ -1,24 +1,25 @@
-From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: OverwriteMC <artyom030803@gmail.com>
-Date: Fri, 9 Jan 2026 02:40:25 -0500
+From c9a151624b826d21dddb814fe18f8843654c3e8e Mon Sep 17 00:00:00 2001
+From: OmniPaper <omnipaper@omnipaper.io>
+Date: Thu, 11 Jun 2026 08:50:55 +0000
 Subject: [PATCH] OmniPaper - Cache namespacedKey toString and hash
 
 Cache toString and hash to reduce allocations.
-Use lazy cache here to prevent cache inconsistency caused by
-operations that don't use the constructor, e.g., Gson serialization or Reflection.
+---
+ src/main/java/org/bukkit/NamespacedKey.java | 24 +++++++++++++++++----
+ 1 file changed, 20 insertions(+), 4 deletions(-)
 
 diff --git a/src/main/java/org/bukkit/NamespacedKey.java b/src/main/java/org/bukkit/NamespacedKey.java
-index 57d95e22db8c6b925fc96cf1a45a5a04366bb517..90de880c89d3db53051df8115b574e5098eca354 100644
+index 57d95e2..075bcd8 100644
 --- a/src/main/java/org/bukkit/NamespacedKey.java
 +++ b/src/main/java/org/bukkit/NamespacedKey.java
 @@ -37,6 +37,10 @@ public final class NamespacedKey implements Key, com.destroystokyo.paper.Namespa
  
      private final String namespace;
      private final String key;
-+    // Leaf start - Cache namespacedKey toString and hash
++    // OmniPaper start - Cache namespacedKey toString and hash
 +    private String keyStr;
 +    private int hash;
-+    // Leaf - Cache namespacedKey toString and hash
++    // OmniPaper end - Cache namespacedKey toString and hash
  
      /**
       * Create a key in a specific namespace.
@@ -29,14 +30,14 @@ index 57d95e22db8c6b925fc96cf1a45a5a04366bb517..90de880c89d3db53051df8115b574e50
 -        int result = this.namespace.hashCode();
 -        result = (31 * result) + this.key.hashCode();
 -        return result;
-+        // Leaf start - Cache namespacedKey toString and hash
++        // OmniPaper start - Cache namespacedKey toString and hash
 +        int hash = this.hash;
-+        if  (hash == 0) {
++        if (hash == 0) {
 +            hash = (31 * this.namespace.hashCode()) + this.key.hashCode();
 +            this.hash = hash;
 +        }
 +        return hash;
-+        // Leaf end - Cache namespacedKey toString and hash
++        // OmniPaper end - Cache namespacedKey toString and hash
      }
  
      @Override
@@ -45,14 +46,14 @@ index 57d95e22db8c6b925fc96cf1a45a5a04366bb517..90de880c89d3db53051df8115b574e50
      @Override
      public String toString() {
 -        return this.namespace + ':' + this.key;
-+        // Leaf start - Cache namespacedKey toString and hash
++        // OmniPaper start - Cache namespacedKey toString and hash
 +        String keyStr = this.keyStr;
-+        if  (keyStr == null) {
++        if (keyStr == null) {
 +            keyStr = this.namespace + ':' + this.key;
 +            this.keyStr = keyStr;
 +        }
 +        return keyStr;
-+        // Leaf end - Cache namespacedKey toString and hash
++        // OmniPaper end - Cache namespacedKey toString and hash
      }
  
      /**

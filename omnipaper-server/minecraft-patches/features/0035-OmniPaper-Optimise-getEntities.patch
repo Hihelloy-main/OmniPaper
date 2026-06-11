@@ -6,7 +6,6 @@ Subject: [PATCH] OmniPaper - Optimise getEntities
 Co-authored by: Martijn Muijsers <martijnmuijsers@live.nl>
 
 diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/ChunkEntitySlices.java b/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/ChunkEntitySlices.java
-index afcff04024c466efcf554c0642aac6f7679ac89f..09dd84d9866a3bbb7282b3277be99a5c16cb0a74 100644
 --- a/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/ChunkEntitySlices.java
 +++ b/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/ChunkEntitySlices.java
 @@ -546,6 +546,15 @@ public final class ChunkEntitySlices {
@@ -86,7 +85,6 @@ index afcff04024c466efcf554c0642aac6f7679ac89f..09dd84d9866a3bbb7282b3277be99a5c
                      }
  
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index b2bdb1606f9bb50f993d6a32003f75b92dfdcf19..91d12b11c5b291a4d440f2c0a090d18cef85be30 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -2351,7 +2351,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin

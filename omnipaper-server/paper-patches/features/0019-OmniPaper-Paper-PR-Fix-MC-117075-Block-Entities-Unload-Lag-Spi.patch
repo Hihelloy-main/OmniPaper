@@ -13,7 +13,6 @@ This is WAY FASTER than using `removeAll` with a list of entries to be removed, 
 
 diff --git a/src/test/java/net/minecraft/world/level/BlockEntityTickersListTest.java b/src/test/java/net/minecraft/world/level/BlockEntityTickersListTest.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..c697adaa750843d4358005c5e922e44ff76725ea
 --- /dev/null
 +++ b/src/test/java/net/minecraft/world/level/BlockEntityTickersListTest.java
 @@ -0,0 +1,406 @@

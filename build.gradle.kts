@@ -48,11 +48,6 @@ paperweight {
     upstreams.paper {
         ref = providers.gradleProperty("paperCommit")
 
-        patchFile {
-            path = "paper-server/build.gradle.kts"
-            outputFile = file("omnipaper-server/build.gradle.kts")
-            patchFile = file("omnipaper-server/build.gradle.kts.patch")
-        }
         patchDir("paperApi") {
             upstreamPath = "paper-api"
             excludes = setOf("build.gradle.kts")

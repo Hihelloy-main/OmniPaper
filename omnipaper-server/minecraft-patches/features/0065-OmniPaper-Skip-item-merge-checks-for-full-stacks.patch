@@ -5,7 +5,6 @@ Subject: [PATCH] OmniPaper - Skip item merge checks for full stacks
 
 
 diff --git a/net/minecraft/world/entity/item/ItemEntity.java b/net/minecraft/world/entity/item/ItemEntity.java
-index f3be1e846bb3ee03d1dfc891823418ebd1de4887..d27940451ad2147a24f81f26318918506838bd95 100644
 --- a/net/minecraft/world/entity/item/ItemEntity.java
 +++ b/net/minecraft/world/entity/item/ItemEntity.java
 @@ -262,8 +262,11 @@ public class ItemEntity extends Entity implements TraceableEntity {

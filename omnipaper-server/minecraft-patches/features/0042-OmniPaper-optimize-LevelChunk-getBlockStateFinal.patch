@@ -5,7 +5,6 @@ Subject: [PATCH] OmniPaper - optimize LevelChunk#getBlockStateFinal
 
 
 diff --git a/net/minecraft/world/level/chunk/LevelChunk.java b/net/minecraft/world/level/chunk/LevelChunk.java
-index fcd5694a890788b3b6f106478ab1944153ebe732..672656e9a5079c3050dee9efffd9db0b8a303ec9 100644
 --- a/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/net/minecraft/world/level/chunk/LevelChunk.java
 @@ -324,12 +324,18 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource, ca.spot

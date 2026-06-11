@@ -5,7 +5,6 @@ Subject: [PATCH] OmniPaper - optimize goal selector
 
 
 diff --git a/net/minecraft/world/entity/ai/goal/Goal.java b/net/minecraft/world/entity/ai/goal/Goal.java
-index f54bbe2e65b18f214266769c7a64144baafa9a58..40d53e4469a71b33949ee2bd7b01783d343d4134 100644
 --- a/net/minecraft/world/entity/ai/goal/Goal.java
 +++ b/net/minecraft/world/entity/ai/goal/Goal.java
 @@ -100,10 +100,12 @@ public abstract class Goal {
@@ -22,7 +21,6 @@ index f54bbe2e65b18f214266769c7a64144baafa9a58..40d53e4469a71b33949ee2bd7b01783d
      }
  }
 diff --git a/net/minecraft/world/entity/ai/goal/GoalSelector.java b/net/minecraft/world/entity/ai/goal/GoalSelector.java
-index 859b859d29b637200cf7c9a0bd52d9f712413e3d..0938c1ab06878a62bd734255d1963001db7cea19 100644
 --- a/net/minecraft/world/entity/ai/goal/GoalSelector.java
 +++ b/net/minecraft/world/entity/ai/goal/GoalSelector.java
 @@ -22,10 +22,12 @@ public class GoalSelector {
@@ -183,7 +181,6 @@ index 859b859d29b637200cf7c9a0bd52d9f712413e3d..0938c1ab06878a62bd734255d1963001
                  wrappedGoal.tick();
              }
 diff --git a/net/minecraft/world/entity/ai/goal/WrappedGoal.java b/net/minecraft/world/entity/ai/goal/WrappedGoal.java
-index 44a7c97164ac7ee731068f909372218350a8682d..34933e28b72f56fff366f9b745e6660b9ac8eae9 100644
 --- a/net/minecraft/world/entity/ai/goal/WrappedGoal.java
 +++ b/net/minecraft/world/entity/ai/goal/WrappedGoal.java
 @@ -4,7 +4,7 @@ import java.util.EnumSet;

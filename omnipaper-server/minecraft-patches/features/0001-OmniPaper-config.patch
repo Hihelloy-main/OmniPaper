@@ -3,31 +3,10 @@ From: OmniPaper <dev@omnipaper.io>
 Date: Wed, 11 Jun 2025 00:00:00 +0000
 Subject: [PATCH] OmniPaper - Config
 
-Wires OmniPaperConfigurations into the server startup and Services record,
-following the same pattern as Paper/Gale configuration.
-
-diff --git a/net/minecraft/server/Main.java b/net/minecraft/server/Main.java
-index 0000000000000000000000000000000000000001..0000000000000000000000000000000000000002 100644
---- a/net/minecraft/server/Main.java
-+++ b/net/minecraft/server/Main.java
-@@ -100,6 +100,9 @@ public class Main {
-                 writePidFile(path);
-             }
- 
-+            // OmniPaper start - config
-+            io.github.omnipaper.server.config.OmniPaperConfigurations.setup();
-+            // OmniPaper end - config
-             CrashReport.preload();
-             if (optionSet.has("jfrProfile")) { // CraftBukkit
-                 JvmProfiler.INSTANCE.start(Environment.SERVER);
+Wires OmniPaperConfigurations into MinecraftServer startup.
 
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 0000000000000000000000000000000000000003..0000000000000000000000000000000000000004 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -304,6 +304,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
-     public volatile boolean abnormalExit; // Paper - Improved watchdog support
-     public volatile Thread shutdownThread; // Paper - Improved watchdog support
-     public final io.papermc.paper.configuration.PaperConfigurations paperConfigurations; // Paper - add paper configuration files
+@@ -1,0 +1,0 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTask> {
 +    public final io.github.omnipaper.server.config.OmniPaperConfigurations omniPaperConfigurations = io.github.omnipaper.server.config.OmniPaperConfigurations.get(); // OmniPaper - config
-     public boolean isIteratingOverLevels = false; // Paper - Throw exception on world create while being ticked

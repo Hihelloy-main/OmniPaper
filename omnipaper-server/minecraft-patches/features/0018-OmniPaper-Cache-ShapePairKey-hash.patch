@@ -9,7 +9,6 @@ Gale - https://galemc.org
 The JMH benchmark of this patch can be found in SunBox's `RecordHashCode`
 
 diff --git a/net/minecraft/world/level/block/Block.java b/net/minecraft/world/level/block/Block.java
-index f6dcd981b6bddadb7618f022908cbbad67095e1b..8a7b1c5444236865a327c59e59d7bc3b69835f0c 100644
 --- a/net/minecraft/world/level/block/Block.java
 +++ b/net/minecraft/world/level/block/Block.java
 @@ -690,7 +690,20 @@ public class Block extends BlockBehaviour implements ItemLike {

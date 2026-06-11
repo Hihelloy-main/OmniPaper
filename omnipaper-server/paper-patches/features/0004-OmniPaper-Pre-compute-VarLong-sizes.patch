@@ -22,7 +22,6 @@ This includes a test to ensure that the behavior is as expected and fixes the in
 
 diff --git a/src/test/java/net/minecraft/network/VarIntLongTest.java b/src/test/java/net/minecraft/network/VarIntLongTest.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..04959045a14ccdce3f836e43e270bcf3349b28bb
 --- /dev/null
 +++ b/src/test/java/net/minecraft/network/VarIntLongTest.java
 @@ -0,0 +1,161 @@

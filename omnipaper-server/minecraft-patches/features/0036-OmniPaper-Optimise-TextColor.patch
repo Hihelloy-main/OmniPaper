@@ -7,7 +7,6 @@ The JMH benchmark of this patch can be found in SunBox's JMH `OptimizeTextColorM
 and nanoTime bench `OptimizeTextColor`.
 
 diff --git a/net/minecraft/network/chat/TextColor.java b/net/minecraft/network/chat/TextColor.java
-index 6fe32d69befe955e9664ebd568afb147398fa967..488a7783b325ae4879e1682cef9525c5006ac3cf 100644
 --- a/net/minecraft/network/chat/TextColor.java
 +++ b/net/minecraft/network/chat/TextColor.java
 @@ -15,9 +15,18 @@ import org.jspecify.annotations.Nullable;

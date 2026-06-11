@@ -12,7 +12,6 @@ Fires org.bukkit.event.server.ServerTickEndEvent (OmniPaper) with current
 tick timing after each tick.
 
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 0000000000000000000000000000000000000007..0000000000000000000000000000000000000008 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
 @@ -0,0 +1,58 @@

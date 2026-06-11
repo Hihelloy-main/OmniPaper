@@ -5,7 +5,6 @@ Subject: [PATCH] OmniPaper - optimize SimpleBitStorage object layout
 
 
 diff --git a/net/minecraft/util/SimpleBitStorage.java b/net/minecraft/util/SimpleBitStorage.java
-index 08af7687cdbf395116c2ae0c40befa518b796846..dfd1b0a3cb64dfa73066fc03def890df6d51fa5c 100644
 --- a/net/minecraft/util/SimpleBitStorage.java
 +++ b/net/minecraft/util/SimpleBitStorage.java
 @@ -204,8 +204,8 @@ public class SimpleBitStorage implements BitStorage {

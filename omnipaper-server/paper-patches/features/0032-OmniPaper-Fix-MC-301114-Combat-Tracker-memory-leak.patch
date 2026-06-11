@@ -7,7 +7,6 @@ Rewritten using EvictingRingList instead of ArrayDeque.
 Superseded Paper PR: https://github.com/PaperMC/Paper/pull/13455
 
 diff --git a/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java b/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
-index 801a3810feb0aed0eb9f440f5fbe65bf6deb59fd..dcbb134906bfa97fe5a08783ec279e6bddeffaa4 100644
 --- a/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
 +++ b/src/main/java/io/papermc/paper/configuration/GlobalConfiguration.java
 @@ -354,6 +354,7 @@ public class GlobalConfiguration extends ConfigurationPart {

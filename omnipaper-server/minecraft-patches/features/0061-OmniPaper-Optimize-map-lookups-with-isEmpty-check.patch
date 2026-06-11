@@ -5,7 +5,6 @@ Subject: [PATCH] OmniPaper - Optimize map lookups with isEmpty check
 
 
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 721cdb2681656ec3220fd1a429f4b007cc5d9ec6..2f1e1378544964b3651a9925d6ad8b50e21f7a95 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
 @@ -251,6 +251,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
@@ -108,7 +107,6 @@ index 721cdb2681656ec3220fd1a429f4b007cc5d9ec6..2f1e1378544964b3651a9925d6ad8b50
      }
  
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index a158c6c40e75a7bbbaed70d609ccf47aa7afbfb3..6a2c7904aa75ccc0b89cfb2f98f1f8764dc76acc 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -1195,7 +1195,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
@@ -130,7 +128,6 @@ index a158c6c40e75a7bbbaed70d609ccf47aa7afbfb3..6a2c7904aa75ccc0b89cfb2f98f1f876
      // CraftBukkit end
  
 diff --git a/net/minecraft/world/entity/Mob.java b/net/minecraft/world/entity/Mob.java
-index 10045bdd3c9692fb0a56f140b4891c67cf64eeea..0364af4baee059b7ddc4739f27917662f6accbcb 100644
 --- a/net/minecraft/world/entity/Mob.java
 +++ b/net/minecraft/world/entity/Mob.java
 @@ -1722,7 +1722,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
@@ -143,7 +140,6 @@ index 10045bdd3c9692fb0a56f140b4891c67cf64eeea..0364af4baee059b7ddc4739f27917662
          }
          if (this instanceof TamableAnimal tamable) {
 diff --git a/net/minecraft/world/entity/monster/piglin/Piglin.java b/net/minecraft/world/entity/monster/piglin/Piglin.java
-index b2ad28c7491fbd06ac1a538aa3b5289d8280de62..77e56f5a0769007ef0569baa99d062d10aca584a 100644
 --- a/net/minecraft/world/entity/monster/piglin/Piglin.java
 +++ b/net/minecraft/world/entity/monster/piglin/Piglin.java
 @@ -508,7 +508,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
@@ -156,7 +152,6 @@ index b2ad28c7491fbd06ac1a538aa3b5289d8280de62..77e56f5a0769007ef0569baa99d062d1
  
      @Override
 diff --git a/net/minecraft/world/entity/vehicle/minecart/AbstractMinecart.java b/net/minecraft/world/entity/vehicle/minecart/AbstractMinecart.java
-index 48099ae66045b6e78ec52832e3b972ac9c9bc246..a297c683850464b9e4102b9db94040c0daae176d 100644
 --- a/net/minecraft/world/entity/vehicle/minecart/AbstractMinecart.java
 +++ b/net/minecraft/world/entity/vehicle/minecart/AbstractMinecart.java
 @@ -434,7 +434,7 @@ public abstract class AbstractMinecart extends VehicleEntity {

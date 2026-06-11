@@ -5,7 +5,6 @@ Subject: [PATCH] OmniPaper - Create tag instance for pdc view only when necessar
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemStack.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemStack.java
-index 388ec223420e0e3a9e975f216ecf1d86f097c66c..16584574769ebf7ddc3cc661508ddd35b4660787 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemStack.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemStack.java
 @@ -484,13 +484,11 @@ public final class CraftItemStack extends ItemStack {

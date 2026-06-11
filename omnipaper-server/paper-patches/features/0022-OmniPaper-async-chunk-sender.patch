@@ -5,7 +5,6 @@ Subject: [PATCH] OmniPaper - async chunk sender
 
 
 diff --git a/src/main/java/io/papermc/paper/antixray/ChunkPacketBlockController.java b/src/main/java/io/papermc/paper/antixray/ChunkPacketBlockController.java
-index 568d12d006996258e6b007622add1a059e475708..58a2f57cdbea21122ace08bb966b95c002f4892e 100644
 --- a/src/main/java/io/papermc/paper/antixray/ChunkPacketBlockController.java
 +++ b/src/main/java/io/papermc/paper/antixray/ChunkPacketBlockController.java
 @@ -36,6 +36,12 @@ public class ChunkPacketBlockController {
@@ -22,7 +21,6 @@ index 568d12d006996258e6b007622add1a059e475708..58a2f57cdbea21122ace08bb966b95c0
  
      }
 diff --git a/src/main/java/io/papermc/paper/antixray/ChunkPacketBlockControllerAntiXray.java b/src/main/java/io/papermc/paper/antixray/ChunkPacketBlockControllerAntiXray.java
-index b03b2d098c20ce53403de7b0aeb0cf67a61bf7b4..b63ae1958bad9e373d94321444b1c47cc452196b 100644
 --- a/src/main/java/io/papermc/paper/antixray/ChunkPacketBlockControllerAntiXray.java
 +++ b/src/main/java/io/papermc/paper/antixray/ChunkPacketBlockControllerAntiXray.java
 @@ -200,6 +200,22 @@ public final class ChunkPacketBlockControllerAntiXray extends ChunkPacketBlockCo
