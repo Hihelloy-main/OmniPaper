@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: OmniPaper <dev@omnipaper.io>
+Date: Wed, 11 Jun 2025 00:00:00 +0000
+Subject: [PATCH] OmniPaper - Rebrand
+
+
+diff --git a/src/main/java/io/papermc/paper/ServerBuildInfo.java b/src/main/java/io/papermc/paper/ServerBuildInfo.java
+index 0000000000000000000000000000000000000001..0000000000000000000000000000000000000002 100644
+--- a/src/main/java/io/papermc/paper/ServerBuildInfo.java
++++ b/src/main/java/io/papermc/paper/ServerBuildInfo.java
+@@ -22,6 +22,13 @@ public interface ServerBuildInfo {
+     Key BRAND_PAPER_ID = Key.key("papermc", "paper");
+ 
+     /**
++     * The brand id for OmniPaper.
++     */
++    // OmniPaper start - rebrand
++    Key BRAND_OMNIPAPER_ID = Key.key("omnipaper", "omnipaper");
++    // OmniPaper end - rebrand
++
++    /**
+      * Gets the {@code ServerBuildInfo}.
+      *
