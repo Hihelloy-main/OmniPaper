@@ -21,7 +21,7 @@ public final class OmniPaperGlobalConfig {
         this.misc = new Misc(cfg);
     }
 
-    public static OmniPaperGlobalConfig load(File file) throws IOException {
+    public static OmniPaperGlobalConfig load(File file) throws Exception {
         YamlConfiguration cfg = new YamlConfiguration();
         if (file.exists()) {
             cfg.load(file);

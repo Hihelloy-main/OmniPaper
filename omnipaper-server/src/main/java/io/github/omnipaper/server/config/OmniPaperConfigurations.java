@@ -23,7 +23,7 @@ public final class OmniPaperConfigurations {
     }
 
     @NullMarked
-    public static OmniPaperConfigurations setup() throws IOException {
+    public static OmniPaperConfigurations setup() throws Exception {
         if (!CONFIG_DIR.exists() && !CONFIG_DIR.mkdirs()) {
             LOGGER.warn("Failed to create config directory");
         }
@@ -45,7 +45,7 @@ public final class OmniPaperConfigurations {
         return globalConfig;
     }
 
-    public void reload() throws IOException {
+    public void reload() throws Exception {
         File globalFile = new File(CONFIG_DIR, GLOBAL_FILE);
         OmniPaperGlobalConfig newGlobal = OmniPaperGlobalConfig.load(globalFile);
         INSTANCE = new OmniPaperConfigurations(newGlobal);
