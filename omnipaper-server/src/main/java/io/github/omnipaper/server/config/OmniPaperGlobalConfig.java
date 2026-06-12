@@ -38,6 +38,7 @@ public final class OmniPaperGlobalConfig {
         public final double adaptiveTickFloorTps;
         public final int entityCullIntervalTicks;
         public final boolean entityCullEnabled;
+        public final double particleCullDistance;
 
         Performance(YamlConfiguration cfg) {
             enableAdaptiveTick = cfg.getBoolean("performance.adaptive-tick.enabled", true);
@@ -46,6 +47,7 @@ public final class OmniPaperGlobalConfig {
             adaptiveTickFloorTps = cfg.getDouble("performance.adaptive-tick.floor-tps", 15.0);
             entityCullEnabled = cfg.getBoolean("performance.entity-cull.enabled", true);
             entityCullIntervalTicks = cfg.getInt("performance.entity-cull.interval-ticks", 200);
+            particleCullDistance = cfg.getDouble("performance.particle-cull-distance", 48.0);
             set(cfg);
         }
 
@@ -56,6 +58,7 @@ public final class OmniPaperGlobalConfig {
             cfg.set("performance.adaptive-tick.floor-tps", adaptiveTickFloorTps);
             cfg.set("performance.entity-cull.enabled", entityCullEnabled);
             cfg.set("performance.entity-cull.interval-ticks", entityCullIntervalTicks);
+            cfg.set("performance.particle-cull-distance", particleCullDistance);
         }
     }
 

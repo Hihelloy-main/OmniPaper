@@ -34,10 +34,8 @@ public final class OmniPaperConfigurations {
         return INSTANCE;
     }
 
+    @org.jspecify.annotations.Nullable
     public static OmniPaperConfigurations get() {
-        if (INSTANCE == null) {
-            throw new IllegalStateException("OmniPaperConfigurations not initialized");
-        }
         return INSTANCE;
     }
 

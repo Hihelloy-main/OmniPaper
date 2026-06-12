@@ -1,0 +1,46 @@
+From b20decc37d266d968d845c4d3e9e48a713695354 Mon Sep 17 00:00:00 2001
+From: Hihelloy <Hihelloylovesu@gmail.com>
+Date: Fri, 12 Jun 2026 09:13:29 +0000
+Subject: [PATCH] OmniPaper - Particle distance culling
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+index ebc65e3..88b3a05 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+@@ -1763,8 +1763,26 @@ public class CraftWorld extends CraftRegionAccessor implements World {
+         if (data != null) {
+             Preconditions.checkArgument(particle.getDataType().isInstance(data), "data (%s) should be %s", data.getClass(), particle.getDataType());
+         }
++        // OmniPaper start - particle distance culling
++        java.util.List<net.minecraft.server.level.ServerPlayer> targets;
++        if (receivers != null) {
++            targets = com.google.common.collect.Lists.transform(receivers, player -> ((org.bukkit.craftbukkit.entity.CraftPlayer) player).getHandle());
++        } else if (!force) {
++            double cullDistSq = io.github.omnipaper.server.config.OmniPaperConfigurations.get() != null
++                ? Math.pow(io.github.omnipaper.server.config.OmniPaperConfigurations.get().global().performance.particleCullDistance, 2)
++                : 2304.0; // 48 blocks default
++            targets = new java.util.ArrayList<>();
++            org.bukkit.util.Vector particlePos = new org.bukkit.util.Vector(x, y, z);
++            for (net.minecraft.server.level.ServerPlayer sp : this.getHandle().players()) {
++                if (sp.getBukkitEntity().getLocation().toVector().distanceSquared(particlePos) <= cullDistSq) {
++                    targets.add(sp);
++                }
++            }
++        } else {
++            targets = this.getHandle().players();
++        }
+         this.getHandle().sendParticlesSource(
+-                receivers == null ? this.getHandle().players() : Lists.transform(receivers, player -> ((CraftPlayer) player).getHandle()), // Paper -  Particle API
++                targets,
+                 sender != null ? ((CraftPlayer) sender).getHandle() : null, // Sender // Paper - Particle API
+                 CraftParticle.createParticleParam(particle, data), // Particle
+                 force,
+@@ -1774,6 +1792,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
+                 offsetX, offsetY, offsetZ, // Random offset
+                 extra // Speed?
+         );
++        // OmniPaper end - particle distance culling
+ 
+     }
+ 
