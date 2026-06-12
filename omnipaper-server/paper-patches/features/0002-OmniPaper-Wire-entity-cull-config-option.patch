@@ -1,0 +1,38 @@
+From 564a1306d0e4941a2e481dc6debb99c225570c53 Mon Sep 17 00:00:00 2001
+From: Hihelloy <Hihelloylovesu@gmail.com>
+Date: Fri, 12 Jun 2026 00:13:58 +0000
+Subject: [PATCH] OmniPaper - Wire entity cull config option
+
+---
+ .../org/bukkit/craftbukkit/CraftServer.java    | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index 8985092..11005a5 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -613,6 +613,24 @@ public final class CraftServer implements Server {
+             CraftDefaultPermissions.registerCorePermissions();
+             if (!io.papermc.paper.configuration.GlobalConfiguration.get().misc.loadPermissionsYmlBeforePlugins) this.loadCustomPermissions(); // Paper
+             this.syncCommands();
++            // OmniPaper start - entity cull task
++            if (io.github.omnipaper.server.config.OmniPaperConfigurations.get().global().performance.entityCullEnabled) {
++                int interval = Math.max(1, io.github.omnipaper.server.config.OmniPaperConfigurations.get().global().performance.entityCullIntervalTicks);
++                this.scheduler.runTaskTimer(null, (task) -> {
++                    for (org.bukkit.World world : this.getWorlds()) {
++                        for (org.bukkit.entity.Entity entity : world.getEntities()) {
++                            if (entity instanceof org.bukkit.entity.LivingEntity living
++                                && !living.hasAI()
++                                && !living.isCustomNameVisible()
++                                && living.getType() != org.bukkit.entity.EntityType.PLAYER
++                                && living.getType() != org.bukkit.entity.EntityType.ARMOR_STAND) {
++                                living.remove();
++                            }
++                        }
++                    }
++                }, interval, interval);
++            }
++            // OmniPaper end - entity cull task
+         }
+     }
+ 
