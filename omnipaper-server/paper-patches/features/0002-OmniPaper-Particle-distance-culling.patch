@@ -1,11 +1,11 @@
-From b20decc37d266d968d845c4d3e9e48a713695354 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Hihelloy <Hihelloylovesu@gmail.com>
 Date: Fri, 12 Jun 2026 09:13:29 +0000
 Subject: [PATCH] OmniPaper - Particle distance culling
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index ebc65e3..88b3a05 100644
+index ebc65e3338c646815416a47bf9af96fe45978caf..88b3a0539fbe9b88965b3c54204c3628c69389ea 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 @@ -1763,8 +1763,26 @@ public class CraftWorld extends CraftRegionAccessor implements World {
