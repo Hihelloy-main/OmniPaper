@@ -1,17 +1,13 @@
-From 0c4fb76215abf7780ec6783be4169dc68d955766 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: OmniPaper <omnipaper@omnipaper.io>
 Date: Thu, 11 Jun 2026 08:36:45 +0000
 Subject: [PATCH] OmniPaper - Specific interval TPS API
 
 License: GPL-3.0-only (https://www.gnu.org/licenses/gpl-3.0.html)
 Gale - https://galemc.org
----
- src/main/java/org/bukkit/Bukkit.java | 28 ++++++++++++++++++++++++++++
- src/main/java/org/bukkit/Server.java | 22 ++++++++++++++++++++++
- 2 files changed, 50 insertions(+)
 
 diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
-index 14d81c7..d5e20d1 100644
+index 14d81c7b138ebf999d5812d26fbf869209c100f3..d5e20d1c4aa3ee9d95b7d0fed70634100bb5bd9d 100644
 --- a/src/main/java/org/bukkit/Bukkit.java
 +++ b/src/main/java/org/bukkit/Bukkit.java
 @@ -2434,6 +2434,34 @@ public final class Bukkit {
@@ -50,7 +46,7 @@ index 14d81c7..d5e20d1 100644
       * Get a sample of the servers last tick times (in nanos)
       *
 diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
-index 0ec885b..4357c95 100644
+index 0ec885b97d655c03371840d739b47063494ed36f..4357c95ae491d8334b8e9a8a35be1a5c632575c3 100644
 --- a/src/main/java/org/bukkit/Server.java
 +++ b/src/main/java/org/bukkit/Server.java
 @@ -2171,6 +2171,28 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi

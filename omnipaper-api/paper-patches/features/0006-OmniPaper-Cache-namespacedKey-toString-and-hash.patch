@@ -1,15 +1,12 @@
-From c9a151624b826d21dddb814fe18f8843654c3e8e Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: OmniPaper <omnipaper@omnipaper.io>
 Date: Thu, 11 Jun 2026 08:50:55 +0000
 Subject: [PATCH] OmniPaper - Cache namespacedKey toString and hash
 
 Cache toString and hash to reduce allocations.
----
- src/main/java/org/bukkit/NamespacedKey.java | 24 +++++++++++++++++----
- 1 file changed, 20 insertions(+), 4 deletions(-)
 
 diff --git a/src/main/java/org/bukkit/NamespacedKey.java b/src/main/java/org/bukkit/NamespacedKey.java
-index 57d95e2..075bcd8 100644
+index 57d95e22db8c6b925fc96cf1a45a5a04366bb517..075bcd88da0b998e9245e0983b298b21918e0a64 100644
 --- a/src/main/java/org/bukkit/NamespacedKey.java
 +++ b/src/main/java/org/bukkit/NamespacedKey.java
 @@ -37,6 +37,10 @@ public final class NamespacedKey implements Key, com.destroystokyo.paper.Namespa

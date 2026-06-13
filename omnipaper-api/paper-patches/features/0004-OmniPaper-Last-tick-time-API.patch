@@ -1,17 +1,13 @@
-From 443ae96d9cf7da567ca77c1ab24bbd514b3067e8 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: OmniPaper <omnipaper@omnipaper.io>
 Date: Thu, 11 Jun 2026 08:37:03 +0000
 Subject: [PATCH] OmniPaper - Last tick time API
 
 License: MIT (https://opensource.org/licenses/MIT)
 Gale - https://galemc.org
----
- src/main/java/org/bukkit/Bukkit.java | 14 ++++++++++++++
- src/main/java/org/bukkit/Server.java | 17 +++++++++++++++++
- 2 files changed, 31 insertions(+)
 
 diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
-index 6651ce7..d958545 100644
+index 6651ce7431bad01fb742129a8a4183028f43fbe3..d9585456074b1e49bce207b42a3f82195797421b 100644
 --- a/src/main/java/org/bukkit/Bukkit.java
 +++ b/src/main/java/org/bukkit/Bukkit.java
 @@ -3036,6 +3036,20 @@ public final class Bukkit {
@@ -36,7 +32,7 @@ index 6651ce7..d958545 100644
       * @deprecated All methods on this class have been deprecated, see the individual methods for replacements.
       */
 diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
-index b838dfe..4e82d93 100644
+index b838dfe625887edc404a966200a47e1743ecb7d0..4e82d93745a6c92f0c36dd4ba23caf916ec3b399 100644
 --- a/src/main/java/org/bukkit/Server.java
 +++ b/src/main/java/org/bukkit/Server.java
 @@ -2785,6 +2785,23 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi

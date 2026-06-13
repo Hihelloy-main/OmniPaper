@@ -1,17 +1,13 @@
-From 8d2cfe4ba6e9e8fb284a6f3b689ea9b8243b9316 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: OmniPaper <omnipaper@omnipaper.io>
 Date: Thu, 11 Jun 2026 08:36:54 +0000
 Subject: [PATCH] OmniPaper - 5 second TPS average
 
 License: MIT (https://opensource.org/licenses/MIT)
 Gale - https://galemc.org
----
- src/main/java/org/bukkit/Bukkit.java | 20 ++++++++++++++++++++
- src/main/java/org/bukkit/Server.java | 17 +++++++++++++++++
- 2 files changed, 37 insertions(+)
 
 diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
-index d5e20d1..6651ce7 100644
+index d5e20d1c4aa3ee9d95b7d0fed70634100bb5bd9d..6651ce7431bad01fb742129a8a4183028f43fbe3 100644
 --- a/src/main/java/org/bukkit/Bukkit.java
 +++ b/src/main/java/org/bukkit/Bukkit.java
 @@ -2434,6 +2434,26 @@ public final class Bukkit {
@@ -42,7 +38,7 @@ index d5e20d1..6651ce7 100644
      /**
       * Gets the average server TPS over the last 1 minute
 diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
-index 4357c95..b838dfe 100644
+index 4357c95ae491d8334b8e9a8a35be1a5c632575c3..b838dfe625887edc404a966200a47e1743ecb7d0 100644
 --- a/src/main/java/org/bukkit/Server.java
 +++ b/src/main/java/org/bukkit/Server.java
 @@ -2171,6 +2171,23 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi

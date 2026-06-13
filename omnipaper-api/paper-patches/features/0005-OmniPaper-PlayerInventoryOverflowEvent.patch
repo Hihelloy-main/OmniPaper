@@ -1,17 +1,12 @@
-From 79aafb67626c25f3c237928d611c3f6f3c111838 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: OmniPaper <omnipaper@omnipaper.io>
 Date: Thu, 11 Jun 2026 08:50:24 +0000
 Subject: [PATCH] OmniPaper - PlayerInventoryOverflowEvent
 
----
- .../player/PlayerInventoryOverflowEvent.java  | 48 +++++++++++++++++++
- .../java/org/bukkit/event/HandlerList.java    |  3 ++
- 2 files changed, 51 insertions(+)
- create mode 100644 src/main/java/io/github/omnipaper/api/event/player/PlayerInventoryOverflowEvent.java
 
 diff --git a/src/main/java/io/github/omnipaper/api/event/player/PlayerInventoryOverflowEvent.java b/src/main/java/io/github/omnipaper/api/event/player/PlayerInventoryOverflowEvent.java
 new file mode 100644
-index 0000000..e4faad6
+index 0000000000000000000000000000000000000000..e4faad6de64603dd6a5787e6c9e3694a868ae8e0
 --- /dev/null
 +++ b/src/main/java/io/github/omnipaper/api/event/player/PlayerInventoryOverflowEvent.java
 @@ -0,0 +1,48 @@
@@ -64,7 +59,7 @@ index 0000000..e4faad6
 +    }
 +}
 diff --git a/src/main/java/org/bukkit/event/HandlerList.java b/src/main/java/org/bukkit/event/HandlerList.java
-index ef9d9f3..86aacac 100644
+index ef9d9f3ddaf25aa990715139e1916672f76c35e5..86aacac0d554abae8fc3c3931ca9155f3e1b461e 100644
 --- a/src/main/java/org/bukkit/event/HandlerList.java
 +++ b/src/main/java/org/bukkit/event/HandlerList.java
 @@ -64,6 +64,7 @@ public class HandlerList {
