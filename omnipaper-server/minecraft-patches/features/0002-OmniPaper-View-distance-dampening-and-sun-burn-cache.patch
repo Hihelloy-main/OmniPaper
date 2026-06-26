@@ -1,0 +1,72 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Hihelloy <Hihelloylovesu@gmail.com>
+Date: Mon, 15 Jun 2026 08:07:33 -0700
+Subject: [PATCH] OmniPaper - View distance dampening and sun burn cache
+
+
+diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
+index 4b25bf055d6b62db718fbd38041987f4aab06b0c..f7fbd63d100de1b70c92fb46199cd18a73ddb8d3 100644
+--- a/net/minecraft/server/MinecraftServer.java
++++ b/net/minecraft/server/MinecraftServer.java
+@@ -10,6 +10,7 @@ import com.mojang.datafixers.DataFixer;
+ import com.mojang.jtracy.DiscontinuousFrame;
+ import com.mojang.jtracy.TracyClient;
+ import com.mojang.logging.LogUtils;
++import io.papermc.paper.FeatureHooks;
+ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+ import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+ import java.io.File;
+@@ -1754,10 +1755,11 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+     public final io.papermc.paper.threadedregions.EntityScheduler.EntitySchedulerTickList entitySchedulerTickList = new io.papermc.paper.threadedregions.EntityScheduler.EntitySchedulerTickList(); // Paper - optimise Folia entity scheduler
+ 
+     protected void tickChildren(BooleanSupplier hasTimeLeft) {
+-        // OmniPaper start - adaptive tick
++        // OmniPaper start - adaptive tick and view distance dampening
+         if (io.github.omnipaper.server.config.OmniPaperConfigurations.get() != null) {
+-            io.github.omnipaper.server.config.OmniPaperGlobalConfig.Performance perf =
+-                    io.github.omnipaper.server.config.OmniPaperConfigurations.get().global().performance;
++            io.github.omnipaper.server.config.OmniPaperGlobalConfig global =
++                    io.github.omnipaper.server.config.OmniPaperConfigurations.get().global();
++            io.github.omnipaper.server.config.OmniPaperGlobalConfig.Performance perf = global.performance;
+             if (perf.enableAdaptiveTick) {
+                 double mspt = this.getAverageTickTimeNanos() / 1_000_000.0;
+                 if (!this.omniTickSkipping && mspt > perf.adaptiveTickThresholdMs) {
+@@ -1770,8 +1772,24 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+                     if (this.omniTickSkipCounter % 2 == 0) return;
+                 }
+             }
++            if (this.tickCount % 100 == 0 && global.network.viewDistanceDampeningEnabled) {
++                int playerCount = this.getPlayerList().getPlayerCount();
++                int serverDefault = this.getPlayerList().getViewDistance();
++                int minView = global.network.minViewDistance;
++                int targetView;
++                if (playerCount > 300)      targetView = minView;
++                else if (playerCount > 200) targetView = Math.max(minView, serverDefault - 3);
++                else if (playerCount > 100) targetView = Math.max(minView, serverDefault - 2);
++                else if (playerCount > 50)  targetView = Math.max(minView, serverDefault - 1);
++                else                        targetView = serverDefault;
++                for (net.minecraft.server.level.ServerPlayer sp : this.getPlayerList().getPlayers()) {
++                    if (ca.spottedleaf.moonrise.common.PlatformHooks.get().getSendViewDistance(sp) != targetView) {
++                        FeatureHooks.setSendViewDistance(sp, targetView);
++                    }
++                }
++            }
+         }
+-        // OmniPaper end - adaptive tick
++        // OmniPaper end - adaptive tick and view distance dampening
+         ProfilerFiller profilerFiller = Profiler.get();
+         this.getPlayerList().getPlayers().forEach(serverPlayer1 -> serverPlayer1.connection.suspendFlushing());
+         this.server.getScheduler().mainThreadHeartbeat(); // CraftBukkit
+diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
+index 3bf618f1d756bad7755a87803132bd731e7c41be..835f753dbca99364217922ce53e9c9b81db091c2 100644
+--- a/net/minecraft/world/entity/Entity.java
++++ b/net/minecraft/world/entity/Entity.java
+@@ -286,6 +286,8 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+     public final RandomSource random = SHARED_RANDOM; // Paper - Share random for entities to make them more random
+     public int tickCount;
+     private int remainingFireTicks;
++    private net.minecraft.core.BlockPos omniEyeBlockPosCache; // OmniPaper - sun burn cache
++    private net.minecraft.world.phys.Vec3 omniEyePosForCache; // OmniPaper - sun burn cache
+     public boolean wasTouchingWater;
+     protected Object2DoubleMap<TagKey<Fluid>> fluidHeight = new Object2DoubleArrayMap<>(2);
+     protected boolean wasEyeInWater;

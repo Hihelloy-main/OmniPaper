@@ -1,0 +1,230 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Hihelloy <Hihelloylovesu@gmail.com>
+Date: Mon, 15 Jun 2026 07:14:07 -0700
+Subject: [PATCH] OmniPaper - All NMS optimizations and config wiring
+
+
+diff --git a/net/minecraft/network/chat/SignedMessageChain.java b/net/minecraft/network/chat/SignedMessageChain.java
+index 67b2f87f8424c5642010b3d9852b55c40d4947e1..25b72476f617281fd3f8f7a0a6f1b0e30e4ec9a5 100644
+--- a/net/minecraft/network/chat/SignedMessageChain.java
++++ b/net/minecraft/network/chat/SignedMessageChain.java
+@@ -54,7 +54,7 @@ public class SignedMessageChain {
+                             this.setChainBroken();
+                             throw new SignedMessageChain.DecodeException(SignedMessageChain.DecodeException.INVALID_SIGNATURE);
+                         } else {
+-                            if (playerChatMessage.hasExpiredServer(Instant.now())) {
++                            if ((io.github.omnipaper.server.config.OmniPaperConfigurations.get() == null || !io.github.omnipaper.server.config.OmniPaperConfigurations.get().global().misc.suppressExpiredMessageLog) && playerChatMessage.hasExpiredServer(Instant.now())) { // OmniPaper - suppress expired message log
+                                 SignedMessageChain.LOGGER.warn("Received expired chat: '{}'. Is the client/server system time unsynchronized?", body.content());
+                             }
+ 
+diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
+index ca2caace6aab0dfcb0ab7a0fd28e66555c62fdc5..4b25bf055d6b62db718fbd38041987f4aab06b0c 100644
+--- a/net/minecraft/server/MinecraftServer.java
++++ b/net/minecraft/server/MinecraftServer.java
+@@ -325,6 +325,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+     private @Nullable double[] tps;
+     private ca.spottedleaf.moonrise.common.time.TickData.@Nullable MSPTData msptData5s;
+ 
++    private int omniTickSkipCounter = 0; // OmniPaper - adaptive tick
++    private boolean omniTickSkipping = false; // OmniPaper - adaptive tick
++
+     private void addTickTime(final ca.spottedleaf.moonrise.common.time.TickTime time) {
+         synchronized (this.statsLock) {
+             this.tickTimes1s.addDataFrom(time);
+@@ -1751,6 +1754,24 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+     public final io.papermc.paper.threadedregions.EntityScheduler.EntitySchedulerTickList entitySchedulerTickList = new io.papermc.paper.threadedregions.EntityScheduler.EntitySchedulerTickList(); // Paper - optimise Folia entity scheduler
+ 
+     protected void tickChildren(BooleanSupplier hasTimeLeft) {
++        // OmniPaper start - adaptive tick
++        if (io.github.omnipaper.server.config.OmniPaperConfigurations.get() != null) {
++            io.github.omnipaper.server.config.OmniPaperGlobalConfig.Performance perf =
++                    io.github.omnipaper.server.config.OmniPaperConfigurations.get().global().performance;
++            if (perf.enableAdaptiveTick) {
++                double mspt = this.getAverageTickTimeNanos() / 1_000_000.0;
++                if (!this.omniTickSkipping && mspt > perf.adaptiveTickThresholdMs) {
++                    this.omniTickSkipping = true;
++                } else if (this.omniTickSkipping && mspt < perf.adaptiveTickRecoveryMs) {
++                    this.omniTickSkipping = false;
++                }
++                if (this.omniTickSkipping) {
++                    this.omniTickSkipCounter++;
++                    if (this.omniTickSkipCounter % 2 == 0) return;
++                }
++            }
++        }
++        // OmniPaper end - adaptive tick
+         ProfilerFiller profilerFiller = Profiler.get();
+         this.getPlayerList().getPlayers().forEach(serverPlayer1 -> serverPlayer1.connection.suspendFlushing());
+         this.server.getScheduler().mainThreadHeartbeat(); // CraftBukkit
+diff --git a/net/minecraft/server/PlayerAdvancements.java b/net/minecraft/server/PlayerAdvancements.java
+index 98004b77b7f40d315f41be82105df6d4b9000e33..37a3782624cc70472f5b9fe43adee6115fcd9da0 100644
+--- a/net/minecraft/server/PlayerAdvancements.java
++++ b/net/minecraft/server/PlayerAdvancements.java
+@@ -146,7 +146,7 @@ public class PlayerAdvancements {
+             AdvancementHolder advancementHolder = advancementManager.get(path);
+             if (advancementHolder == null) {
+                 if (!path.getNamespace().equals(Identifier.DEFAULT_NAMESPACE)) return; // CraftBukkit
+-                LOGGER.warn("Ignored advancement '{}' in progress file {} - it doesn't exist anymore?", path, this.playerSavePath);
++                if (io.github.omnipaper.server.config.OmniPaperConfigurations.get() == null || !io.github.omnipaper.server.config.OmniPaperConfigurations.get().global().misc.suppressIgnoredAdvancementsLog) LOGGER.warn("Ignored advancement '{}' in progress file {} - it doesn't exist anymore?", path, this.playerSavePath); // OmniPaper - suppress ignored advancements log
+             } else {
+                 this.startProgress(advancementHolder, progress);
+                 this.progressChanged.add(advancementHolder);
+diff --git a/net/minecraft/server/level/ServerEntity.java b/net/minecraft/server/level/ServerEntity.java
+index 3a817c92147bb78c60238f3ddc1644b721aed7a2..45e3099a7bc04542eb45509a295cfcd2dd85ed57 100644
+--- a/net/minecraft/server/level/ServerEntity.java
++++ b/net/minecraft/server/level/ServerEntity.java
+@@ -171,28 +171,36 @@ public class ServerEntity {
+                 long l1 = this.positionCodec.encodeY(vec3);
+                 long l2 = this.positionCodec.encodeZ(vec3);
+                 boolean flag5 = l < -32768L || l > 32767L || l1 < -32768L || l1 > 32767L || l2 < -32768L || l2 > 32767L;
++                boolean onGroundChanged = this.wasOnGround != this.entity.onGround(); // OmniPaper - filter useless packets
+                 if (this.forceStateResync || this.entity.getRequiresPrecisePosition() // Paper - fix desync when a player is added to the tracker
+                     || flag5
+                     || this.teleportDelay > 400
+                     || this.wasRiding
+-                    || this.wasOnGround != this.entity.onGround()) {
++                        || onGroundChanged) { // OmniPaper - filter useless packets
+                     this.wasOnGround = this.entity.onGround();
+                     this.teleportDelay = 0;
+                     packet = ClientboundEntityPositionSyncPacket.of(this.entity);
+                     flag3 = true;
+                     flag4 = true;
+-                } else if ((!flag2 || !flag) && !(this.entity instanceof AbstractArrow)) {
+-                    if (flag2) {
+-                        packet = new ClientboundMoveEntityPacket.Pos(this.entity.getId(), (short)l, (short)l1, (short)l2, this.entity.onGround());
+-                        flag3 = true;
+-                    } else if (flag) {
+-                        packet = new ClientboundMoveEntityPacket.Rot(this.entity.getId(), b, b1, this.entity.onGround());
+-                        flag4 = true;
+-                    }
+                 } else {
+-                    packet = new ClientboundMoveEntityPacket.PosRot(this.entity.getId(), (short)l, (short)l1, (short)l2, b, b1, this.entity.onGround());
+-                    flag3 = true;
+-                    flag4 = true;
++                    // OmniPaper start - filter useless move packets
++                    if (flag2 || flag || this.entity instanceof AbstractArrow) {
++                        if ((!flag2 || !flag) && !(this.entity instanceof AbstractArrow)) {
++                            if (flag2) {
++                                packet = new ClientboundMoveEntityPacket.Pos(this.entity.getId(), (short) l, (short) l1, (short) l2, this.entity.onGround());
++                                flag3 = true;
++                            } else if (flag) {
++                                packet = new ClientboundMoveEntityPacket.Rot(this.entity.getId(), b, b1, this.entity.onGround());
++                                flag4 = true;
++                            }
++                        } else {
++                            packet = new ClientboundMoveEntityPacket.PosRot(this.entity.getId(), (short) l, (short) l1, (short) l2, b, b1, this.entity.onGround());
++                            flag3 = true;
++                            flag4 = true;
++                        }
++                    }
++                    // OmniPaper end - filter useless move packets
++                    if (!onGroundChanged && isOmniUselessPacket(packet)) packet = null; // OmniPaper - skip zero-delta packets
+                 }
+ 
+                 if (this.entity.needsSync || this.trackDelta || this.entity instanceof LivingEntity && ((LivingEntity)this.entity).isFallFlying()) {
+@@ -269,6 +277,18 @@ public class ServerEntity {
+         }
+     }
+ 
++    // OmniPaper start - useless packet helper
++    private boolean isOmniUselessPacket(@Nullable Packet<?> packet) {
++        if (!(packet instanceof ClientboundMoveEntityPacket p)) return false;
++        return switch (packet) {
++            case ClientboundMoveEntityPacket.Pos ignored -> p.getXa() == 0 && p.getYa() == 0 && p.getZa() == 0;
++            case ClientboundMoveEntityPacket.PosRot ignored -> p.getXa() == 0 && p.getYa() == 0 && p.getZa() == 0 && p.getYRot() == 0 && p.getXRot() == 0;
++            case ClientboundMoveEntityPacket.Rot ignored -> p.getYRot() == 0 && p.getXRot() == 0;
++            default -> false;
++        };
++    }
++    // OmniPaper end - useless packet helper
++
+     private void handleMinecartPosRot(NewMinecartBehavior behavior, byte yRot, byte xRot, boolean dirty) {
+         this.sendDirtyEntityData();
+         if (behavior.lerpSteps.isEmpty()) {
+diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+index e158d614abed8d16e80192c0c9abd8537c92b9dc..316e557962a4a631e886c9c47347d0f1aa122c44 100644
+--- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
++++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+@@ -2582,7 +2582,7 @@ public class ServerGamePacketListenerImpl
+         // CraftBukkit start
+         String rawMessage = message.signedContent();
+         if (rawMessage.isEmpty()) {
+-            LOGGER.warn("{} tried to send an empty message", this.player.getScoreboardName());
++            if (io.github.omnipaper.server.config.OmniPaperConfigurations.get() == null || !io.github.omnipaper.server.config.OmniPaperConfigurations.get().global().misc.suppressEmptyMessageLog) LOGGER.warn("{} tried to send an empty message", this.player.getScoreboardName()); // OmniPaper - suppress empty message log
+         } else if (this.getCraftPlayer().isConversing()) {
+             final String conversationInput = rawMessage;
+             this.server.processQueue.add(() -> ServerGamePacketListenerImpl.this.getCraftPlayer().acceptConversationInput(conversationInput));
+diff --git a/net/minecraft/stats/ServerRecipeBook.java b/net/minecraft/stats/ServerRecipeBook.java
+index 736a52c23da313bec6b25a9d1abf08816462403c..973a0017d7e9dd64a2174b43e8ad2be5b91a986b 100644
+--- a/net/minecraft/stats/ServerRecipeBook.java
++++ b/net/minecraft/stats/ServerRecipeBook.java
+@@ -106,7 +106,7 @@ public class ServerRecipeBook extends RecipeBook {
+     private void loadRecipes(List<ResourceKey<Recipe<?>>> recipes, Consumer<ResourceKey<Recipe<?>>> output, Predicate<ResourceKey<Recipe<?>>> isRecognized) {
+         for (ResourceKey<Recipe<?>> resourceKey : recipes) {
+             if (!isRecognized.test(resourceKey)) {
+-                LOGGER.error("Tried to load unrecognized recipe: {} removed now.", resourceKey);
++                if (io.github.omnipaper.server.config.OmniPaperConfigurations.get() == null || !io.github.omnipaper.server.config.OmniPaperConfigurations.get().global().misc.suppressUnrecognizedRecipeLog) LOGGER.error("Tried to load unrecognized recipe: {} removed now.", resourceKey); // OmniPaper - suppress unrecognized recipe log
+             } else {
+                 output.accept(resourceKey);
+             }
+diff --git a/net/minecraft/stats/ServerStatsCounter.java b/net/minecraft/stats/ServerStatsCounter.java
+index 6b254d2d91c19e81edac13a00ad646092f958382..29aa844266b35686c5dcf239080ebe898bbfa771 100644
+--- a/net/minecraft/stats/ServerStatsCounter.java
++++ b/net/minecraft/stats/ServerStatsCounter.java
+@@ -121,7 +121,7 @@ public class ServerStatsCounter extends StatsCounter {
+         this.stats
+             .putAll(
+                 STATS_CODEC.parse(dynamic.get("stats").orElseEmptyMap())
+-                    .resultOrPartial(string -> LOGGER.error("Failed to parse statistics for {}: {}", this.file, string))
++                        .resultOrPartial(string -> { if (io.github.omnipaper.server.config.OmniPaperConfigurations.get() != null && io.github.omnipaper.server.config.OmniPaperConfigurations.get().global().misc.suppressInvalidStatsLog) return; LOGGER.error("Failed to parse statistics for {}: {}", this.file, string); }) // OmniPaper - suppress invalid stats log
+                     .orElse(Map.of())
+             );
+     }
+diff --git a/net/minecraft/world/entity/projectile/Projectile.java b/net/minecraft/world/entity/projectile/Projectile.java
+index 6298e6de25f1dd9ff880a9ad2882dc7ccb2f100c..8eea3d49acfbcd7f988f3988ee5dd5c6e9bd2d61 100644
+--- a/net/minecraft/world/entity/projectile/Projectile.java
++++ b/net/minecraft/world/entity/projectile/Projectile.java
+@@ -50,6 +50,43 @@ public abstract class Projectile extends Entity implements TraceableEntity {
+         super(type, level);
+     }
+ 
++    // OmniPaper start - reduce projectile chunk loading
++    private static int omniChunksLoadedThisTick = 0;
++    private static int omniChunksLoadedInTick = 0;
++    private int omniChunksLoadedByThis = 0;
++    private static final int OMNI_MAX_CHUNKS_PER_TICK = 10;
++    private static final int OMNI_MAX_CHUNKS_PER_PROJECTILE = 8;
++
++    @Override
++    public void setPos(double x, double y, double z) {
++        int currentTick = net.minecraft.server.MinecraftServer.currentTick;
++        if (omniChunksLoadedInTick != currentTick) {
++            omniChunksLoadedInTick = currentTick;
++            omniChunksLoadedThisTick = 0;
++        }
++        int prevChunkX = Mth.floor(this.getX()) >> 4;
++        int prevChunkZ = Mth.floor(this.getZ()) >> 4;
++        int newChunkX = Mth.floor(x) >> 4;
++        int newChunkZ = Mth.floor(z) >> 4;
++        if (prevChunkX != newChunkX || prevChunkZ != newChunkZ) {
++            boolean loaded = ((net.minecraft.server.level.ServerChunkCache) this.level().getChunkSource())
++                    .getChunkAtIfLoadedImmediately(newChunkX, newChunkZ) != null;
++            if (!loaded) {
++                if (omniChunksLoadedThisTick >= OMNI_MAX_CHUNKS_PER_TICK) {
++                    return;
++                }
++                if (this.omniChunksLoadedByThis >= OMNI_MAX_CHUNKS_PER_PROJECTILE) {
++                    this.discard();
++                    return;
++                }
++                omniChunksLoadedThisTick++;
++                this.omniChunksLoadedByThis++;
++            }
++        }
++        super.setPos(x, y, z);
++    }
++    // OmniPaper end - reduce projectile chunk loading
++
+     protected void setOwner(@Nullable EntityReference<Entity> owner) {
+         this.owner = owner;
+         this.refreshProjectileSource(false); // Paper

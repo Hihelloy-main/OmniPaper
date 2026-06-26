@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Hihelloy <Hihelloylovesu@gmail.com>
+Date: Sat, 13 Jun 2026 03:24:24 -0700
+Subject: [PATCH] OmniPaper - Fix version command message
+
+
+diff --git a/src/main/java/org/bukkit/command/defaults/VersionCommand.java b/src/main/java/org/bukkit/command/defaults/VersionCommand.java
+index 29756f4ea6c6abf3b35106ee05a4f9ffd404a6af..38045a51607fbd964f950c92296f8038ef7b66fc 100644
+--- a/src/main/java/org/bukkit/command/defaults/VersionCommand.java
++++ b/src/main/java/org/bukkit/command/defaults/VersionCommand.java
+@@ -214,7 +214,7 @@ public class VersionCommand extends BukkitCommand {
+         String version = Bukkit.getVersion();
+         // Paper start
+         if (version.startsWith("null")) { // running from ide?
+-            setVersionMessage(Component.text("Unknown version, custom build?", NamedTextColor.YELLOW));
++            setVersionMessage(Component.text("OmniPaper - Custom Fork", NamedTextColor.GREEN));
+             return;
+         }
+         setVersionMessage(getVersionFetcher().getVersionMessage(version));
+@@ -246,7 +246,7 @@ public class VersionCommand extends BukkitCommand {
+                 }
+             }
+         } else {
+-            setVersionMessage("Unknown version, custom build?");
++            setVersionMessage(Component.text("OmniPaper - Custom Fork", NamedTextColor.GREEN));
+         }
+          */
+         // Paper end

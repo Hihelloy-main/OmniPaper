@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Hihelloy <Hihelloylovesu@gmail.com>
+Date: Mon, 15 Jun 2026 08:10:07 -0700
+Subject: [PATCH] More patches, config changes, and fixes.
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+index 88b3a0539fbe9b88965b3c54204c3628c69389ea..79377d51b84f89cb977715a4d3b2c5c4ffce5ab8 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+@@ -1555,6 +1555,21 @@ public class CraftWorld extends CraftRegionAccessor implements World {
+         double y = loc.getY();
+         double z = loc.getZ();
+ 
++        // OmniPaper start - sound distance culling
++        io.github.omnipaper.server.config.OmniPaperConfigurations cfg = io.github.omnipaper.server.config.OmniPaperConfigurations.get();
++        if (cfg != null) {
++            double cullDistSq = cfg.global().performance.soundCullDistance * cfg.global().performance.soundCullDistance;
++            org.bukkit.util.Vector soundPos = new org.bukkit.util.Vector(x, y, z);
++            for (net.minecraft.server.level.ServerPlayer sp : this.getHandle().players()) {
++                if (sp.getBukkitEntity().getLocation().toVector().distanceSquared(soundPos) <= cullDistSq) {
++                    sp.connection.send(new net.minecraft.network.protocol.game.ClientboundSoundPacket(
++                            net.minecraft.core.Holder.direct(net.minecraft.sounds.SoundEvent.createVariableRangeEvent(CraftSound.bukkitToMinecraft(sound).location())),
++                            SoundSource.valueOf(category.name()), x, y, z, volume, pitch, seed));
++                }
++            }
++            return;
++        }
++        // OmniPaper end - sound distance culling
+         this.getHandle().playSeededSound(null, x, y, z, CraftSound.bukkitToMinecraft(sound), SoundSource.valueOf(category.name()), volume, pitch, seed);
+     }
+ 

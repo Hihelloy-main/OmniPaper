@@ -1,0 +1,47 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Hihelloy <Hihelloylovesu@gmail.com>
+Date: Sat, 13 Jun 2026 03:39:50 -0700
+Subject: [PATCH] OmniPaper - Custom version message
+
+
+diff --git a/src/main/java/com/destroystokyo/paper/PaperVersionFetcher.java b/src/main/java/com/destroystokyo/paper/PaperVersionFetcher.java
+index 602d3ce2cd16405f35453ce12a207b70312a4a8a..83bff2688919728ec7145d7af4f060d85466dd5f 100644
+--- a/src/main/java/com/destroystokyo/paper/PaperVersionFetcher.java
++++ b/src/main/java/com/destroystokyo/paper/PaperVersionFetcher.java
+@@ -53,15 +53,9 @@ public class PaperVersionFetcher implements VersionFetcher {
+ 
+     @Override
+     public Component getVersionMessage() {
+-        final Component updateMessage;
+-        if (BUILD_INFO.buildNumber().isEmpty() && BUILD_INFO.gitCommit().isEmpty()) {
+-            updateMessage = text("You are running a development version without access to version information", color(0xFF5300));
+-        } else {
+-            updateMessage = getUpdateStatusMessage();
+-        }
+-        final @Nullable Component history = this.getHistory();
+-
+-        return history != null ? Component.textOfChildren(updateMessage, Component.newline(), history) : updateMessage;
++        // OmniPaper start - custom version message
++        return text("OmniPaper - Custom Fork of Paper 1.21.11", NamedTextColor.GREEN);
++        // OmniPaper end
+     }
+ 
+     public static void getUpdateStatusStartupMessage() {
+@@ -92,7 +86,7 @@ public class PaperVersionFetcher implements VersionFetcher {
+                     COMPONENT_LOGGER.warn(text(DOWNLOAD_PAGE));
+                     COMPONENT_LOGGER.warn(text("*************************************************************************************"));
+                 });
+-                case DISTANCE_UNKNOWN -> COMPONENT_LOGGER.warn(text("*** You are running an unknown version! Cannot fetch version info ***"));
++                case DISTANCE_UNKNOWN -> COMPONENT_LOGGER.info(text("*** OmniPaper - Custom Build ***"));
+                 default -> {
+                     if (apiResult.isPresent()) {
+                         COMPONENT_LOGGER.warn(text("*** You are running an outdated version of Minecraft, which is " + apiResult.get().distance() + " release(s) and " + distance + " build(s) behind!"));
+@@ -123,7 +117,7 @@ public class PaperVersionFetcher implements VersionFetcher {
+         return switch (distance) {
+             case DISTANCE_ERROR -> text("Error obtaining version information", NamedTextColor.YELLOW);
+             case 0 -> text("You are running the latest version", NamedTextColor.GREEN);
+-            case DISTANCE_UNKNOWN -> text("Unknown version", NamedTextColor.YELLOW);
++            case DISTANCE_UNKNOWN -> text("OmniPaper - Custom Build", NamedTextColor.GREEN);
+             default -> text("You are " + distance + " version(s) behind", NamedTextColor.YELLOW)
+                 .append(Component.newline())
+                 .append(text("Download the new version at: ")

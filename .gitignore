@@ -1,0 +1,11 @@
+.gradle/
+build/
+run/
+paper-api/
+paper-server/
+*.class
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+.idea/
+*.iml
+.DS_Store

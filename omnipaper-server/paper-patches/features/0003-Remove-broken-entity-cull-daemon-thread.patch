@@ -1,0 +1,55 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Hihelloy <Hihelloylovesu@gmail.com>
+Date: Sat, 13 Jun 2026 02:33:33 -0700
+Subject: [PATCH] Remove broken entity cull daemon thread
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index e635b0c4e7c8b3b8a4698ae043d28fa7ed637a45..1b627bc184a912a976116ab38f76ceead2b57cdb 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -605,44 +605,6 @@ public final class CraftServer implements Server {
+             CraftDefaultPermissions.registerCorePermissions();
+             if (!io.papermc.paper.configuration.GlobalConfiguration.get().misc.loadPermissionsYmlBeforePlugins) this.loadCustomPermissions(); // Paper
+             this.syncCommands();
+-            // OmniPaper start - config, command and entity cull
+-            if (io.github.omnipaper.server.config.OmniPaperConfigurations.get() == null) {
+-                try {
+-                    io.github.omnipaper.server.config.OmniPaperConfigurations.setup();
+-                } catch (Exception e) {
+-                    this.getLogger().severe("Failed to load OmniPaper config: " + e.getMessage());
+-                }
+-            }
+-            this.commandMap.register("omnipaper", "omnipaper", new io.github.omnipaper.server.command.OmniPaperCommand());
+-            io.github.omnipaper.server.config.OmniPaperGlobalConfig.Performance perf =
+-                io.github.omnipaper.server.config.OmniPaperConfigurations.get().global().performance;
+-            if (perf.entityCullEnabled) {
+-                long intervalMs = perf.entityCullIntervalTicks * 50L;
+-                Thread cullThread = new Thread(() -> {
+-                    while (this.getServer().isRunning()) {
+-                        try {
+-                            Thread.sleep(intervalMs);
+-                        } catch (InterruptedException ex) {
+-                            Thread.currentThread().interrupt();
+-                            break;
+-                        }
+-                        for (org.bukkit.World world : this.getWorlds()) {
+-                            for (org.bukkit.entity.Entity entity : world.getEntities()) {
+-                                if (entity instanceof org.bukkit.entity.LivingEntity living
+-                                    && !living.hasAI()
+-                                    && !living.isCustomNameVisible()
+-                                    && living.getType() != org.bukkit.entity.EntityType.PLAYER
+-                                    && living.getType() != org.bukkit.entity.EntityType.ARMOR_STAND) {
+-                                    living.remove();
+-                                }
+-                            }
+-                        }
+-                    }
+-                }, "omnipaper-entity-cull");
+-                cullThread.setDaemon(true);
+-                cullThread.start();
+-            }
+-            // OmniPaper end - config, command and entity cull
+         }
+     }
+ 

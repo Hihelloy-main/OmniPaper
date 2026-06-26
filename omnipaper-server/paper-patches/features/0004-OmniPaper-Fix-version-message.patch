@@ -1,0 +1,41 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Hihelloy <Hihelloylovesu@gmail.com>
+Date: Mon, 15 Jun 2026 18:20:15 -0700
+Subject: [PATCH] OmniPaper - Fix version message
+
+
+diff --git a/src/main/java/com/destroystokyo/paper/PaperVersionFetcher.java b/src/main/java/com/destroystokyo/paper/PaperVersionFetcher.java
+index 602d3ce2cd16405f35453ce12a207b70312a4a8a..fcde3341281649829a0f2bd7bd0fb48cecdac34b 100644
+--- a/src/main/java/com/destroystokyo/paper/PaperVersionFetcher.java
++++ b/src/main/java/com/destroystokyo/paper/PaperVersionFetcher.java
+@@ -53,15 +53,9 @@ public class PaperVersionFetcher implements VersionFetcher {
+ 
+     @Override
+     public Component getVersionMessage() {
+-        final Component updateMessage;
+-        if (BUILD_INFO.buildNumber().isEmpty() && BUILD_INFO.gitCommit().isEmpty()) {
+-            updateMessage = text("You are running a development version without access to version information", color(0xFF5300));
+-        } else {
+-            updateMessage = getUpdateStatusMessage();
+-        }
+-        final @Nullable Component history = this.getHistory();
+-
+-        return history != null ? Component.textOfChildren(updateMessage, Component.newline(), history) : updateMessage;
++        // OmniPaper start - custom version message
++        return text("OmniPaper - Custom Fork of Paper 1.21.11", NamedTextColor.GREEN);
++        // OmniPaper end
+     }
+ 
+     public static void getUpdateStatusStartupMessage() {
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index 86aa019f3fcd13ffa47ab0e4c9a38bbd88884ff0..ca5422efa8dc6737f7496c735e74f55585594565 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -614,6 +614,7 @@ public final class CraftServer implements Server {
+             // OmniPaper start - config and command
+             this.commandMap.register("omnipaper", "omnipaper", new io.github.omnipaper.server.command.OmniPaperCommand());
+             // OmniPaper end - config and command
++            io.github.omnipaper.api.packet.OmniPacketAPI.setInstance(new io.github.omnipaper.server.packet.OmniPacketAPIImpl()); // OmniPaper - packet API
+             this.syncCommands();
+             // OmniPaper start - entity cull task
+             if (io.github.omnipaper.server.config.OmniPaperConfigurations.get().global().performance.entityCullEnabled) {

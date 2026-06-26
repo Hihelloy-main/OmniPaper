@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Hihelloy <Hihelloylovesu@gmail.com>
+Date: Fri, 26 Jun 2026 03:13:54 -0700
+Subject: [PATCH] OmniPaper - Auto-inject packet handler on join
+
+
+diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
+index 989ac565c47a70c7947cb7315d0f5c2cfecd0363..99cb6bab3ceee5da96c44f56fcd97d49ed35c952 100644
+--- a/net/minecraft/server/players/PlayerList.java
++++ b/net/minecraft/server/players/PlayerList.java
+@@ -304,6 +304,13 @@ public abstract class PlayerList {
+         player.initInventoryMenu();
+         this.server.notificationManager().playerJoined(player);
+         serverGamePacketListenerImpl.resumeFlushing();
++        // OmniPaper start - auto-inject packet handler
++        try {
++            io.github.omnipaper.api.packet.OmniPacketAPI.get().inject(player.getBukkitEntity());
++        } catch (IllegalStateException ignored) {
++            // packet API not yet initialized this early in startup, skip
++        }
++        // OmniPaper end - auto-inject packet handler
+         // Paper start - Configurable player collision; Add to collideRule team if needed
+         final net.minecraft.world.scores.Scoreboard scoreboard = this.getServer().getLevel(Level.OVERWORLD).getScoreboard();
+         final PlayerTeam collideRuleTeam = scoreboard.getPlayerTeam(this.collideRuleTeamName);

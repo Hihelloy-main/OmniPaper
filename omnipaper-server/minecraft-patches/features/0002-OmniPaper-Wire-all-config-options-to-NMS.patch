@@ -1,0 +1,110 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Hihelloy <Hihelloylovesu@gmail.com>
+Date: Sat, 13 Jun 2026 17:35:52 -0700
+Subject: [PATCH] OmniPaper - Wire all config options to NMS
+
+
+diff --git a/net/minecraft/network/chat/SignedMessageChain.java b/net/minecraft/network/chat/SignedMessageChain.java
+index 67b2f87f8424c5642010b3d9852b55c40d4947e1..84b703d8db6c2f14511c5da5af7f448f9421382f 100644
+--- a/net/minecraft/network/chat/SignedMessageChain.java
++++ b/net/minecraft/network/chat/SignedMessageChain.java
+@@ -54,7 +54,7 @@ public class SignedMessageChain {
+                             this.setChainBroken();
+                             throw new SignedMessageChain.DecodeException(SignedMessageChain.DecodeException.INVALID_SIGNATURE);
+                         } else {
+-                            if (playerChatMessage.hasExpiredServer(Instant.now())) {
++                            if (!io.github.omnipaper.server.config.OmniPaperConfigurations.get().global().misc.suppressExpiredMessageLog && playerChatMessage.hasExpiredServer(Instant.now())) { // OmniPaper - suppress expired message log
+                                 SignedMessageChain.LOGGER.warn("Received expired chat: '{}'. Is the client/server system time unsynchronized?", body.content());
+                             }
+ 
+diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
+index ca2caace6aab0dfcb0ab7a0fd28e66555c62fdc5..32318c6d7947334e2cdb959c7c007c279f5332b6 100644
+--- a/net/minecraft/server/MinecraftServer.java
++++ b/net/minecraft/server/MinecraftServer.java
+@@ -324,6 +324,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+     private final Object statsLock = new Object();
+     private @Nullable double[] tps;
+     private ca.spottedleaf.moonrise.common.time.TickData.@Nullable MSPTData msptData5s;
++    // OmniPaper start - adaptive tick
++    private int omniTickCount = 0;
++    private boolean omniTickSkipping = false;
++// OmniPaper end - adaptive tick
+ 
+     private void addTickTime(final ca.spottedleaf.moonrise.common.time.TickTime time) {
+         synchronized (this.statsLock) {
+@@ -1777,6 +1781,23 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+             this.processQueue.remove().run();
+         }
+ 
++        // OmniPaper start - adaptive tick
++        io.github.omnipaper.server.config.OmniPaperGlobalConfig.Performance perf = io.github.omnipaper.server.config.OmniPaperConfigurations.get() != null
++                ? io.github.omnipaper.server.config.OmniPaperConfigurations.get().global().performance : null;
++        if (perf != null && perf.enableAdaptiveTick) {
++            double mspt = this.getAverageTickTimeNanos() / 1_000_000.0;
++            if (!omniTickSkipping && mspt > perf.adaptiveTickThresholdMs) {
++                omniTickSkipping = true;
++            } else if (omniTickSkipping && mspt < perf.adaptiveTickRecoveryMs) {
++                omniTickSkipping = false;
++            }
++            if (omniTickSkipping) {
++                omniTickCount++;
++                if (omniTickCount % 2 == 0) return; // skip every other tick
++            }
++        }
++// OmniPaper end - adaptive tick
++
+         // Send time updates to everyone, it will get the right time from the world the player is in.
+         // Paper start - Perf: Optimize time updates
+         for (final ServerLevel level : this.getAllLevels()) {
+diff --git a/net/minecraft/server/PlayerAdvancements.java b/net/minecraft/server/PlayerAdvancements.java
+index 98004b77b7f40d315f41be82105df6d4b9000e33..37a3782624cc70472f5b9fe43adee6115fcd9da0 100644
+--- a/net/minecraft/server/PlayerAdvancements.java
++++ b/net/minecraft/server/PlayerAdvancements.java
+@@ -146,7 +146,7 @@ public class PlayerAdvancements {
+             AdvancementHolder advancementHolder = advancementManager.get(path);
+             if (advancementHolder == null) {
+                 if (!path.getNamespace().equals(Identifier.DEFAULT_NAMESPACE)) return; // CraftBukkit
+-                LOGGER.warn("Ignored advancement '{}' in progress file {} - it doesn't exist anymore?", path, this.playerSavePath);
++                if (io.github.omnipaper.server.config.OmniPaperConfigurations.get() == null || !io.github.omnipaper.server.config.OmniPaperConfigurations.get().global().misc.suppressIgnoredAdvancementsLog) LOGGER.warn("Ignored advancement '{}' in progress file {} - it doesn't exist anymore?", path, this.playerSavePath); // OmniPaper - suppress ignored advancements log
+             } else {
+                 this.startProgress(advancementHolder, progress);
+                 this.progressChanged.add(advancementHolder);
+diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+index e158d614abed8d16e80192c0c9abd8537c92b9dc..316e557962a4a631e886c9c47347d0f1aa122c44 100644
+--- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
++++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+@@ -2582,7 +2582,7 @@ public class ServerGamePacketListenerImpl
+         // CraftBukkit start
+         String rawMessage = message.signedContent();
+         if (rawMessage.isEmpty()) {
+-            LOGGER.warn("{} tried to send an empty message", this.player.getScoreboardName());
++            if (io.github.omnipaper.server.config.OmniPaperConfigurations.get() == null || !io.github.omnipaper.server.config.OmniPaperConfigurations.get().global().misc.suppressEmptyMessageLog) LOGGER.warn("{} tried to send an empty message", this.player.getScoreboardName()); // OmniPaper - suppress empty message log
+         } else if (this.getCraftPlayer().isConversing()) {
+             final String conversationInput = rawMessage;
+             this.server.processQueue.add(() -> ServerGamePacketListenerImpl.this.getCraftPlayer().acceptConversationInput(conversationInput));
+diff --git a/net/minecraft/stats/ServerRecipeBook.java b/net/minecraft/stats/ServerRecipeBook.java
+index 736a52c23da313bec6b25a9d1abf08816462403c..973a0017d7e9dd64a2174b43e8ad2be5b91a986b 100644
+--- a/net/minecraft/stats/ServerRecipeBook.java
++++ b/net/minecraft/stats/ServerRecipeBook.java
+@@ -106,7 +106,7 @@ public class ServerRecipeBook extends RecipeBook {
+     private void loadRecipes(List<ResourceKey<Recipe<?>>> recipes, Consumer<ResourceKey<Recipe<?>>> output, Predicate<ResourceKey<Recipe<?>>> isRecognized) {
+         for (ResourceKey<Recipe<?>> resourceKey : recipes) {
+             if (!isRecognized.test(resourceKey)) {
+-                LOGGER.error("Tried to load unrecognized recipe: {} removed now.", resourceKey);
++                if (io.github.omnipaper.server.config.OmniPaperConfigurations.get() == null || !io.github.omnipaper.server.config.OmniPaperConfigurations.get().global().misc.suppressUnrecognizedRecipeLog) LOGGER.error("Tried to load unrecognized recipe: {} removed now.", resourceKey); // OmniPaper - suppress unrecognized recipe log
+             } else {
+                 output.accept(resourceKey);
+             }
+diff --git a/net/minecraft/stats/ServerStatsCounter.java b/net/minecraft/stats/ServerStatsCounter.java
+index 6b254d2d91c19e81edac13a00ad646092f958382..aeba231821866200d05aa1a3eb6419dade86f463 100644
+--- a/net/minecraft/stats/ServerStatsCounter.java
++++ b/net/minecraft/stats/ServerStatsCounter.java
+@@ -121,7 +121,7 @@ public class ServerStatsCounter extends StatsCounter {
+         this.stats
+             .putAll(
+                 STATS_CODEC.parse(dynamic.get("stats").orElseEmptyMap())
+-                    .resultOrPartial(string -> LOGGER.error("Failed to parse statistics for {}: {}", this.file, string))
++                        .resultOrPartial(string -> { if (io.github.omnipaper.server.config.OmniPaperConfigurations.get() == null || io.github.omnipaper.server.config.OmniPaperConfigurations.get().global().misc.suppressInvalidStatsLog) return; LOGGER.error("Failed to parse statistics for {}: {}", this.file, string); }) // OmniPaper - suppress invalid stats log
+                     .orElse(Map.of())
+             );
+     }

@@ -1,0 +1,34 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Hihelloy <Hihelloylovesu@gmail.com>
+Date: Mon, 15 Jun 2026 17:52:06 -0700
+Subject: [PATCH] OmniPaper - View distance dampening and sun burn cache
+
+
+diff --git a/net/minecraft/world/entity/Mob.java b/net/minecraft/world/entity/Mob.java
+index 92175cc019750e829fcad7691a937024c2649882..0f6f57f20c04a439723449fd714ba19d9f43e56e 100644
+--- a/net/minecraft/world/entity/Mob.java
++++ b/net/minecraft/world/entity/Mob.java
+@@ -578,12 +578,19 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
+     public boolean isSunBurnTick() {
+         if (!this.level().isClientSide() && this.level().environmentAttributes().getValue(EnvironmentAttributes.MONSTERS_BURN, this.position())) {
+             float lightLevelDependentMagicValue = this.getLightLevelDependentMagicValue();
+-            BlockPos blockPos = BlockPos.containing(this.getX(), this.getEyeY(), this.getZ());
++            // OmniPaper start - cache eye blockpos for sun burn tick
++            net.minecraft.world.phys.Vec3 currentPos = this.position();
++            if (this.omniEyeBlockPosCache == null || !currentPos.equals(this.omniEyePosForCache)) {
++                this.omniEyePosForCache = currentPos;
++                this.omniEyeBlockPosCache = BlockPos.containing(this.getX(), this.getEyeY(), this.getZ());
++            }
++            BlockPos blockPos = this.omniEyeBlockPosCache;
++            // OmniPaper end - cache eye blockpos for sun burn tick
+             boolean flag = this.isInWaterOrRain() || this.isInPowderSnow || this.wasInPowderSnow;
+             if (lightLevelDependentMagicValue > 0.5F
+-                && this.random.nextFloat() * 30.0F < (lightLevelDependentMagicValue - 0.4F) * 2.0F
+-                && !flag
+-                && this.level().canSeeSky(blockPos)) {
++                    && this.random.nextFloat() * 30.0F < (lightLevelDependentMagicValue - 0.4F) * 2.0F
++                    && !flag
++                    && this.level().canSeeSky(blockPos)) {
+                 return true;
+             }
+         }

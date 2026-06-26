@@ -1,0 +1,129 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Hihelloy <Hihelloylovesu@gmail.com>
+Date: Fri, 12 Jun 2026 09:13:29 +0000
+Subject: [PATCH] OmniPaper - Particle distance culling
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index e635b0c4e7c8b3b8a4698ae043d28fa7ed637a45..86aa019f3fcd13ffa47ab0e4c9a38bbd88884ff0 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -484,7 +484,14 @@ public final class CraftServer implements Server {
+         }
+         this.potionBrewer = new io.papermc.paper.potion.PaperPotionBrewer(console); // Paper - custom potion mixes
+         datapackManager = new io.papermc.paper.datapack.PaperDatapackManager(console.getPackRepository()); // Paper
+-        this.spark = new io.papermc.paper.SparksFly(this); // Paper - spark
++        this.spark = new io.papermc.paper.SparksFly(this);// Paper - spark
++        // OmniPaper start - init config early
++        try {
++            io.github.omnipaper.server.config.OmniPaperConfigurations.setup();
++        } catch (Exception e) {
++            this.getLogger().severe("Failed to load OmniPaper config: " + e.getMessage());
++        }
++        // OmniPaper end - init config early
+     }
+ 
+     public boolean getCommandBlockOverride(String command) {
+@@ -604,20 +611,13 @@ public final class CraftServer implements Server {
+             DefaultPermissions.registerCorePermissions();
+             CraftDefaultPermissions.registerCorePermissions();
+             if (!io.papermc.paper.configuration.GlobalConfiguration.get().misc.loadPermissionsYmlBeforePlugins) this.loadCustomPermissions(); // Paper
+-            this.syncCommands();
+-            // OmniPaper start - config, command and entity cull
+-            if (io.github.omnipaper.server.config.OmniPaperConfigurations.get() == null) {
+-                try {
+-                    io.github.omnipaper.server.config.OmniPaperConfigurations.setup();
+-                } catch (Exception e) {
+-                    this.getLogger().severe("Failed to load OmniPaper config: " + e.getMessage());
+-                }
+-            }
++            // OmniPaper start - config and command
+             this.commandMap.register("omnipaper", "omnipaper", new io.github.omnipaper.server.command.OmniPaperCommand());
+-            io.github.omnipaper.server.config.OmniPaperGlobalConfig.Performance perf =
+-                io.github.omnipaper.server.config.OmniPaperConfigurations.get().global().performance;
+-            if (perf.entityCullEnabled) {
+-                long intervalMs = perf.entityCullIntervalTicks * 50L;
++            // OmniPaper end - config and command
++            this.syncCommands();
++            // OmniPaper start - entity cull task
++            if (io.github.omnipaper.server.config.OmniPaperConfigurations.get().global().performance.entityCullEnabled) {
++                long intervalMs = io.github.omnipaper.server.config.OmniPaperConfigurations.get().global().performance.entityCullIntervalTicks * 50L;
+                 Thread cullThread = new Thread(() -> {
+                     while (this.getServer().isRunning()) {
+                         try {
+@@ -626,23 +626,25 @@ public final class CraftServer implements Server {
+                             Thread.currentThread().interrupt();
+                             break;
+                         }
+-                        for (org.bukkit.World world : this.getWorlds()) {
+-                            for (org.bukkit.entity.Entity entity : world.getEntities()) {
+-                                if (entity instanceof org.bukkit.entity.LivingEntity living
+-                                    && !living.hasAI()
+-                                    && !living.isCustomNameVisible()
+-                                    && living.getType() != org.bukkit.entity.EntityType.PLAYER
+-                                    && living.getType() != org.bukkit.entity.EntityType.ARMOR_STAND) {
+-                                    living.remove();
++                        net.minecraft.server.MinecraftServer.getServer().submit(() -> {
++                            for (org.bukkit.World world : CraftServer.this.getWorlds()) {
++                                for (org.bukkit.entity.Entity entity : world.getEntities()) {
++                                    if (entity instanceof org.bukkit.entity.LivingEntity living
++                                            && !living.hasAI()
++                                            && !living.isCustomNameVisible()
++                                            && living.getType() != org.bukkit.entity.EntityType.PLAYER
++                                            && living.getType() != org.bukkit.entity.EntityType.ARMOR_STAND) {
++                                        living.remove();
++                                    }
+                                 }
+                             }
+-                        }
++                        });
+                     }
+                 }, "omnipaper-entity-cull");
+                 cullThread.setDaemon(true);
+                 cullThread.start();
+             }
+-            // OmniPaper end - config, command and entity cull
++            // OmniPaper end - entity cull task
+         }
+     }
+ 
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+index ebc65e3338c646815416a47bf9af96fe45978caf..88b3a0539fbe9b88965b3c54204c3628c69389ea 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+@@ -1763,8 +1763,26 @@ public class CraftWorld extends CraftRegionAccessor implements World {
+         if (data != null) {
+             Preconditions.checkArgument(particle.getDataType().isInstance(data), "data (%s) should be %s", data.getClass(), particle.getDataType());
+         }
++        // OmniPaper start - particle distance culling
++        java.util.List<net.minecraft.server.level.ServerPlayer> targets;
++        if (receivers != null) {
++            targets = com.google.common.collect.Lists.transform(receivers, player -> ((org.bukkit.craftbukkit.entity.CraftPlayer) player).getHandle());
++        } else if (!force) {
++            double cullDistSq = io.github.omnipaper.server.config.OmniPaperConfigurations.get() != null
++                ? Math.pow(io.github.omnipaper.server.config.OmniPaperConfigurations.get().global().performance.particleCullDistance, 2)
++                : 2304.0; // 48 blocks default
++            targets = new java.util.ArrayList<>();
++            org.bukkit.util.Vector particlePos = new org.bukkit.util.Vector(x, y, z);
++            for (net.minecraft.server.level.ServerPlayer sp : this.getHandle().players()) {
++                if (sp.getBukkitEntity().getLocation().toVector().distanceSquared(particlePos) <= cullDistSq) {
++                    targets.add(sp);
++                }
++            }
++        } else {
++            targets = this.getHandle().players();
++        }
+         this.getHandle().sendParticlesSource(
+-                receivers == null ? this.getHandle().players() : Lists.transform(receivers, player -> ((CraftPlayer) player).getHandle()), // Paper -  Particle API
++                targets,
+                 sender != null ? ((CraftPlayer) sender).getHandle() : null, // Sender // Paper - Particle API
+                 CraftParticle.createParticleParam(particle, data), // Particle
+                 force,
+@@ -1774,6 +1792,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
+                 offsetX, offsetY, offsetZ, // Random offset
+                 extra // Speed?
+         );
++        // OmniPaper end - particle distance culling
+ 
+     }
+ 

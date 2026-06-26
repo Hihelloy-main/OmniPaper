@@ -1,0 +1,56 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: OmniPaper <omnipaper@omnipaper.io>
+Date: Thu, 11 Jun 2026 08:50:55 +0000
+Subject: [PATCH] OmniPaper - Cache namespacedKey toString and hash
+
+Cache toString and hash to reduce allocations.
+
+diff --git a/src/main/java/org/bukkit/NamespacedKey.java b/src/main/java/org/bukkit/NamespacedKey.java
+index 57d95e22db8c6b925fc96cf1a45a5a04366bb517..075bcd88da0b998e9245e0983b298b21918e0a64 100644
+--- a/src/main/java/org/bukkit/NamespacedKey.java
++++ b/src/main/java/org/bukkit/NamespacedKey.java
+@@ -37,6 +37,10 @@ public final class NamespacedKey implements Key, com.destroystokyo.paper.Namespa
+ 
+     private final String namespace;
+     private final String key;
++    // OmniPaper start - Cache namespacedKey toString and hash
++    private String keyStr;
++    private int hash;
++    // OmniPaper end - Cache namespacedKey toString and hash
+ 
+     /**
+      * Create a key in a specific namespace.
+@@ -106,9 +110,14 @@ public final class NamespacedKey implements Key, com.destroystokyo.paper.Namespa
+ 
+     @Override
+     public int hashCode() {
+-        int result = this.namespace.hashCode();
+-        result = (31 * result) + this.key.hashCode();
+-        return result;
++        // OmniPaper start - Cache namespacedKey toString and hash
++        int hash = this.hash;
++        if (hash == 0) {
++            hash = (31 * this.namespace.hashCode()) + this.key.hashCode();
++            this.hash = hash;
++        }
++        return hash;
++        // OmniPaper end - Cache namespacedKey toString and hash
+     }
+ 
+     @Override
+@@ -123,7 +132,14 @@ public final class NamespacedKey implements Key, com.destroystokyo.paper.Namespa
+ 
+     @Override
+     public String toString() {
+-        return this.namespace + ':' + this.key;
++        // OmniPaper start - Cache namespacedKey toString and hash
++        String keyStr = this.keyStr;
++        if (keyStr == null) {
++            keyStr = this.namespace + ':' + this.key;
++            this.keyStr = keyStr;
++        }
++        return keyStr;
++        // OmniPaper end - Cache namespacedKey toString and hash
+     }
+ 
+     /**

@@ -1,0 +1,439 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Hihelloy <Hihelloylovesu@gmail.com>
+Date: Mon, 15 Jun 2026 18:11:19 -0700
+Subject: [PATCH] OmniPaper - Performance patches batch 2
+
+
+diff --git a/io/papermc/paper/entity/activation/ActivationRange.java b/io/papermc/paper/entity/activation/ActivationRange.java
+index c18823746ab2edcab536cb1589b7720e3af07e0f..3c50b13fbde53208ba8bc67bd9995babdfe948dc 100644
+--- a/io/papermc/paper/entity/activation/ActivationRange.java
++++ b/io/papermc/paper/entity/activation/ActivationRange.java
+@@ -221,7 +221,7 @@ public final class ActivationRange {
+         }
+         // special cases.
+         if (entity instanceof final LivingEntity living) {
+-            if (living.onClimbable() || living.jumping || living.hurtTime > 0 || !living.activeEffects.isEmpty() || living.isFreezing()) {
++            if (living.onClimbableCached() || living.jumping || living.hurtTime > 0 || !living.activeEffects.isEmpty() || living.isFreezing()) { // OmniPaper - Airplane - use cached climbable
+                 return 1;
+             }
+             if (entity instanceof final Mob mob && mob.getTarget() != null) {
+diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
+index 835f753dbca99364217922ce53e9c9b81db091c2..03031c169a5b514571570a129a5eeeb78708225e 100644
+--- a/net/minecraft/world/entity/Entity.java
++++ b/net/minecraft/world/entity/Entity.java
+@@ -265,6 +265,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+     public float yRotO;
+     public float xRotO;
+     private AABB bb = INITIAL_AABB;
++    private boolean boundingBoxChanged = false; // OmniPaper - VMP - skip entity move if zero
+     public boolean onGround;
+     public boolean horizontalCollision;
+     public boolean verticalCollision;
+@@ -286,8 +287,8 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+     public final RandomSource random = SHARED_RANDOM; // Paper - Share random for entities to make them more random
+     public int tickCount;
+     private int remainingFireTicks;
+-    private net.minecraft.core.BlockPos omniEyeBlockPosCache; // OmniPaper - sun burn cache
+-    private net.minecraft.world.phys.Vec3 omniEyePosForCache; // OmniPaper - sun burn cache
++    net.minecraft.core.BlockPos omniEyeBlockPosCache; // OmniPaper - sun burn cache
++    net.minecraft.world.phys.Vec3 omniEyePosForCache; // OmniPaper - sun burn cache
+     public boolean wasTouchingWater;
+     protected Object2DoubleMap<TagKey<Fluid>> fluidHeight = new Object2DoubleArrayMap<>(2);
+     protected boolean wasEyeInWater;
+@@ -1124,135 +1125,146 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+             this.moveVector = movement;
+         }
+         try {
+-        // Paper end - detailed watchdog information
+-        if (this.noPhysics) {
+-            this.setPos(this.getX() + movement.x, this.getY() + movement.y, this.getZ() + movement.z);
+-            this.horizontalCollision = false;
+-            this.verticalCollision = false;
+-            this.verticalCollisionBelow = false;
+-            this.minorHorizontalCollision = false;
+-        } else {
+-            if (type == MoverType.PISTON) {
+-                // Paper start - EAR 2
+-                this.activatedTick = Math.max(this.activatedTick, net.minecraft.server.MinecraftServer.currentTick + 20);
+-                this.activatedImmunityTick = Math.max(this.activatedImmunityTick, net.minecraft.server.MinecraftServer.currentTick + 20);
+-                // Paper end - EAR 2
+-                movement = this.limitPistonMovement(movement);
+-                if (movement.equals(Vec3.ZERO)) {
++            // Paper end - detailed watchdog information
++            if (this.noPhysics) {
++                this.setPos(this.getX() + movement.x, this.getY() + movement.y, this.getZ() + movement.z);
++                this.horizontalCollision = false;
++                this.verticalCollision = false;
++                this.verticalCollisionBelow = false;
++                this.minorHorizontalCollision = false;
++            } else {
++                // OmniPaper start - VMP - skip entity move if movement is zero
++                if (!this.boundingBoxChanged && movement.equals(Vec3.ZERO)) {
++                    this.horizontalCollision = false;
++                    this.verticalCollision = false;
++                    this.verticalCollisionBelow = false;
++                    this.setOnGroundWithMovement(false, false, Vec3.ZERO);
++                    this.boundingBoxChanged = false;
+                     return;
+                 }
+-            }
+-
+-            ProfilerFiller profilerFiller = Profiler.get();
+-            profilerFiller.push("move");
+-            if (this.stuckSpeedMultiplier.lengthSqr() > 1.0E-7) {
+-                if (type != MoverType.PISTON) {
+-                    movement = movement.multiply(this.stuckSpeedMultiplier);
+-                }
+-
+-                this.stuckSpeedMultiplier = Vec3.ZERO;
+-                this.setDeltaMovement(Vec3.ZERO);
+-            }
+-            // Paper start - ignore movement changes while inactive.
+-            if (isTemporarilyActive && !(this instanceof ItemEntity) && movement == getDeltaMovement() && type == MoverType.SELF) {
+-                setDeltaMovement(Vec3.ZERO);
+-                profilerFiller.pop();
+-                return;
+-            }
+-            // Paper end
+-
+-            movement = this.maybeBackOffFromEdge(movement, type);
+-            Vec3 vec3 = this.collide(movement);
+-            double d = vec3.lengthSqr();
+-            if (d > 1.0E-7 || movement.lengthSqr() - d < 1.0E-7) {
+-                if (this.fallDistance != 0.0 && d >= 1.0) {
+-                    double min = Math.min(vec3.length(), 8.0);
+-                    Vec3 vec31 = this.position().add(vec3.normalize().scale(min));
+-                    BlockHitResult blockHitResult = this.level()
+-                        .clip(new ClipContext(this.position(), vec31, ClipContext.Block.FALLDAMAGE_RESETTING, ClipContext.Fluid.WATER, this));
+-                    if (blockHitResult.getType() != HitResult.Type.MISS) {
+-                        this.resetFallDistance();
++                this.boundingBoxChanged = false;
++                // OmniPaper end - VMP - skip entity move if movement is zero
++                if (type == MoverType.PISTON) {
++                    // Paper start - EAR 2
++                    this.activatedTick = Math.max(this.activatedTick, net.minecraft.server.MinecraftServer.currentTick + 20);
++                    this.activatedImmunityTick = Math.max(this.activatedImmunityTick, net.minecraft.server.MinecraftServer.currentTick + 20);
++                    // Paper end - EAR 2
++                    movement = this.limitPistonMovement(movement);
++                    if (movement.equals(Vec3.ZERO)) {
++                        return;
+                     }
+                 }
+ 
+-                Vec3 vec32 = this.position();
+-                Vec3 vec33 = vec32.add(vec3);
+-                this.addMovementThisTick(new Entity.Movement(vec32, vec33, movement));
+-                this.setPos(vec33);
+-            }
++                ProfilerFiller profilerFiller = Profiler.get();
++                profilerFiller.push("move");
++                if (this.stuckSpeedMultiplier.lengthSqr() > 1.0E-7) {
++                    if (type != MoverType.PISTON) {
++                        movement = movement.multiply(this.stuckSpeedMultiplier);
++                    }
+ 
+-            profilerFiller.pop();
+-            profilerFiller.push("rest");
+-            boolean flag = !Mth.equal(movement.x, vec3.x);
+-            boolean flag1 = !Mth.equal(movement.z, vec3.z);
+-            this.horizontalCollision = flag || flag1;
+-            if (Math.abs(movement.y) > 0.0 || this.isLocalInstanceAuthoritative()) {
+-                this.verticalCollision = movement.y != vec3.y;
+-                this.verticalCollisionBelow = this.verticalCollision && movement.y < 0.0;
+-                this.setOnGroundWithMovement(this.verticalCollisionBelow, this.horizontalCollision, vec3);
+-            }
++                    this.stuckSpeedMultiplier = Vec3.ZERO;
++                    this.setDeltaMovement(Vec3.ZERO);
++                }
++                // Paper start - ignore movement changes while inactive.
++                if (isTemporarilyActive && !(this instanceof ItemEntity) && movement == getDeltaMovement() && type == MoverType.SELF) {
++                    setDeltaMovement(Vec3.ZERO);
++                    profilerFiller.pop();
++                    return;
++                }
++                // Paper end
+ 
+-            if (this.horizontalCollision) {
+-                this.minorHorizontalCollision = this.isHorizontalCollisionMinor(vec3);
+-            } else {
+-                this.minorHorizontalCollision = false;
+-            }
++                movement = this.maybeBackOffFromEdge(movement, type);
++                Vec3 vec3 = this.collide(movement);
++                double d = vec3.lengthSqr();
++                if (d > 1.0E-7 || movement.lengthSqr() - d < 1.0E-7) {
++                    if (this.fallDistance != 0.0 && d >= 1.0) {
++                        double min = Math.min(vec3.length(), 8.0);
++                        Vec3 vec31 = this.position().add(vec3.normalize().scale(min));
++                        BlockHitResult blockHitResult = this.level()
++                                .clip(new ClipContext(this.position(), vec31, ClipContext.Block.FALLDAMAGE_RESETTING, ClipContext.Fluid.WATER, this));
++                        if (blockHitResult.getType() != HitResult.Type.MISS) {
++                            this.resetFallDistance();
++                        }
++                    }
+ 
+-            BlockPos onPosLegacy = this.getOnPosLegacy();
+-            BlockState blockState = this.level().getBlockState(onPosLegacy);
+-            if (this.isLocalInstanceAuthoritative()) {
+-                this.checkFallDamage(vec3.y, this.onGround(), blockState, onPosLegacy);
+-            }
++                    Vec3 vec32 = this.position();
++                    Vec3 vec33 = vec32.add(vec3);
++                    this.addMovementThisTick(new Entity.Movement(vec32, vec33, movement));
++                    this.setPos(vec33);
++                }
+ 
+-            if (this.isRemoved()) {
+                 profilerFiller.pop();
+-            } else {
++                profilerFiller.push("rest");
++                boolean flag = !Mth.equal(movement.x, vec3.x);
++                boolean flag1 = !Mth.equal(movement.z, vec3.z);
++                this.horizontalCollision = flag || flag1;
++                if (Math.abs(movement.y) > 0.0 || this.isLocalInstanceAuthoritative()) {
++                    this.verticalCollision = movement.y != vec3.y;
++                    this.verticalCollisionBelow = this.verticalCollision && movement.y < 0.0;
++                    this.setOnGroundWithMovement(this.verticalCollisionBelow, this.horizontalCollision, vec3);
++                }
++
+                 if (this.horizontalCollision) {
+-                    Vec3 deltaMovement = this.getDeltaMovement();
+-                    this.setDeltaMovement(flag ? 0.0 : deltaMovement.x, deltaMovement.y, flag1 ? 0.0 : deltaMovement.z);
++                    this.minorHorizontalCollision = this.isHorizontalCollisionMinor(vec3);
++                } else {
++                    this.minorHorizontalCollision = false;
+                 }
+ 
+-                if (this.canSimulateMovement()) {
+-                    Block block = blockState.getBlock();
+-                    if (movement.y != vec3.y) {
+-                        block.updateEntityMovementAfterFallOn(this.level(), this);
+-                    }
++                BlockPos onPosLegacy = this.getOnPosLegacy();
++                BlockState blockState = this.level().getBlockState(onPosLegacy);
++                if (this.isLocalInstanceAuthoritative()) {
++                    this.checkFallDamage(vec3.y, this.onGround(), blockState, onPosLegacy);
+                 }
+-                // CraftBukkit start
+-                if (this.horizontalCollision && this.getBukkitEntity() instanceof org.bukkit.entity.Vehicle) {
+-                    org.bukkit.entity.Vehicle vehicle = (org.bukkit.entity.Vehicle) this.getBukkitEntity();
+-                    org.bukkit.block.Block block = this.level.getWorld().getBlockAt(Mth.floor(this.getX()), Mth.floor(this.getY()), Mth.floor(this.getZ()));
+-
+-                    if (movement.x > vec3.x) {
+-                        block = block.getRelative(org.bukkit.block.BlockFace.EAST);
+-                    } else if (movement.x < vec3.x) {
+-                        block = block.getRelative(org.bukkit.block.BlockFace.WEST);
+-                    } else if (movement.z > vec3.z) {
+-                        block = block.getRelative(org.bukkit.block.BlockFace.SOUTH);
+-                    } else if (movement.z < vec3.z) {
+-                        block = block.getRelative(org.bukkit.block.BlockFace.NORTH);
++
++                if (this.isRemoved()) {
++                    profilerFiller.pop();
++                } else {
++                    if (this.horizontalCollision) {
++                        Vec3 deltaMovement = this.getDeltaMovement();
++                        this.setDeltaMovement(flag ? 0.0 : deltaMovement.x, deltaMovement.y, flag1 ? 0.0 : deltaMovement.z);
++                    }
++
++                    if (this.canSimulateMovement()) {
++                        Block block = blockState.getBlock();
++                        if (movement.y != vec3.y) {
++                            block.updateEntityMovementAfterFallOn(this.level(), this);
++                        }
+                     }
++                    // CraftBukkit start
++                    if (this.horizontalCollision && this.getBukkitEntity() instanceof org.bukkit.entity.Vehicle) {
++                        org.bukkit.entity.Vehicle vehicle = (org.bukkit.entity.Vehicle) this.getBukkitEntity();
++                        org.bukkit.block.Block block = this.level.getWorld().getBlockAt(Mth.floor(this.getX()), Mth.floor(this.getY()), Mth.floor(this.getZ()));
++
++                        if (movement.x > vec3.x) {
++                            block = block.getRelative(org.bukkit.block.BlockFace.EAST);
++                        } else if (movement.x < vec3.x) {
++                            block = block.getRelative(org.bukkit.block.BlockFace.WEST);
++                        } else if (movement.z > vec3.z) {
++                            block = block.getRelative(org.bukkit.block.BlockFace.SOUTH);
++                        } else if (movement.z < vec3.z) {
++                            block = block.getRelative(org.bukkit.block.BlockFace.NORTH);
++                        }
+ 
+-                    if (!block.getType().isAir()) {
+-                        org.bukkit.event.vehicle.VehicleBlockCollisionEvent event = new org.bukkit.event.vehicle.VehicleBlockCollisionEvent(vehicle, block, org.bukkit.craftbukkit.util.CraftVector.toBukkit(originalMovement)); // Paper - Expose pre-collision velocity
+-                        event.callEvent();
++                        if (!block.getType().isAir()) {
++                            org.bukkit.event.vehicle.VehicleBlockCollisionEvent event = new org.bukkit.event.vehicle.VehicleBlockCollisionEvent(vehicle, block, org.bukkit.craftbukkit.util.CraftVector.toBukkit(originalMovement)); // Paper - Expose pre-collision velocity
++                            event.callEvent();
++                        }
+                     }
+-                }
+-                // CraftBukkit end
++                    // CraftBukkit end
+ 
+-                if (!this.level().isClientSide() || this.isLocalInstanceAuthoritative()) {
+-                    Entity.MovementEmission movementEmission = this.getMovementEmission();
+-                    if (movementEmission.emitsAnything() && !this.isPassenger()) {
+-                        this.applyMovementEmissionAndPlaySound(movementEmission, vec3, onPosLegacy, blockState);
++                    if (!this.level().isClientSide() || this.isLocalInstanceAuthoritative()) {
++                        Entity.MovementEmission movementEmission = this.getMovementEmission();
++                        if (movementEmission.emitsAnything() && !this.isPassenger()) {
++                            this.applyMovementEmissionAndPlaySound(movementEmission, vec3, onPosLegacy, blockState);
++                        }
+                     }
+-                }
+ 
+-                float blockSpeedFactor = this.getBlockSpeedFactor();
+-                this.setDeltaMovement(this.getDeltaMovement().multiply(blockSpeedFactor, 1.0, blockSpeedFactor));
+-                profilerFiller.pop();
++                    float blockSpeedFactor = this.getBlockSpeedFactor();
++                    this.setDeltaMovement(this.getDeltaMovement().multiply(blockSpeedFactor, 1.0, blockSpeedFactor));
++                    profilerFiller.pop();
++                }
+             }
+-        }
+-        // Paper start - detailed watchdog information
++            // Paper start - detailed watchdog information
+         } finally {
+             synchronized (this.posLock) { // Paper
+                 this.moveVector = null;
+@@ -4454,6 +4466,11 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
+     }
+ 
+     public final void setBoundingBox(AABB bb) {
++        // OmniPaper start - VMP - skip entity move if movement is zero
++        if (!this.bb.equals(bb)) {
++            this.boundingBoxChanged = true;
++        }
++        // OmniPaper end - VMP - skip entity move if movement is zero
+         // CraftBukkit start - block invalid bounding boxes
+         double minX = bb.minX,
+                 minY = bb.minY,
+diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
+index 07b3d08d9c2f9e978379de5a6b846a828029e2fa..f3a847c2ba6681ddf9e2684493fcbcdf83bf524d 100644
+--- a/net/minecraft/world/entity/LivingEntity.java
++++ b/net/minecraft/world/entity/LivingEntity.java
+@@ -544,17 +544,15 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+     }
+ 
+     protected void tryAddFrost() {
+-        if (!this.getBlockStateOnLegacy().isAir()) {
+-            int ticksFrozen = this.getTicksFrozen();
+-            if (ticksFrozen > 0) {
+-                AttributeInstance attribute = this.getAttribute(Attributes.MOVEMENT_SPEED);
+-                if (attribute == null) {
+-                    return;
+-                }
+-
+-                float f = -0.05F * this.getPercentFrozen();
+-                attribute.addTransientModifier(new AttributeModifier(SPEED_MODIFIER_POWDER_SNOW_ID, f, AttributeModifier.Operation.ADD_VALUE));
++        // OmniPaper - Lithium - check frozen ticks before landing block
++        int ticksFrozen = this.getTicksFrozen();
++        if (ticksFrozen > 0) {
++            AttributeInstance attribute = this.getBlockStateOnLegacy().isAir() ? null : this.getAttribute(Attributes.MOVEMENT_SPEED);
++            if (attribute == null) {
++                return;
+             }
++            float f = -0.05F * this.getPercentFrozen();
++            attribute.addTransientModifier(new AttributeModifier(SPEED_MODIFIER_POWDER_SNOW_ID, f, AttributeModifier.Operation.ADD_VALUE));
+         }
+     }
+ 
+@@ -562,6 +560,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+         EnchantmentHelper.runLocationChangedEffects(level, this);
+     }
+ 
++
+     public boolean isBaby() {
+         return false;
+     }
+@@ -2173,6 +2172,19 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+         return this.lastClimbablePos;
+     }
+ 
++    // OmniPaper start - Airplane - cache on climbable check
++    private boolean cachedOnClimbable = false;
++    private BlockPos lastClimbingPosition = null;
++
++    public boolean onClimbableCached() {
++        if (!this.blockPosition().equals(this.lastClimbingPosition)) {
++            this.cachedOnClimbable = this.onClimbable();
++            this.lastClimbingPosition = this.blockPosition();
++        }
++        return this.cachedOnClimbable;
++    }
++    // OmniPaper end - Airplane - cache on climbable check
++
+     public boolean onClimbable() {
+         if (this.isSpectator()) {
+             return false;
+diff --git a/net/minecraft/world/entity/ai/targeting/TargetingConditions.java b/net/minecraft/world/entity/ai/targeting/TargetingConditions.java
+index e4beea8dcf9db2211ae838470daf060074dd8ec2..791bc6c60dec479233c6c0f8e76a6307c32f7beb 100644
+--- a/net/minecraft/world/entity/ai/targeting/TargetingConditions.java
++++ b/net/minecraft/world/entity/ai/targeting/TargetingConditions.java
+@@ -74,9 +74,15 @@ public class TargetingConditions {
+                 }
+ 
+                 if (this.range > 0.0) {
+-                    double d = this.testInvisible ? target.getVisibilityPercent(entity) : 1.0;
+-                    double max = Math.max(this.range * d, 2.0);
++                    // OmniPaper start - Airplane - check targeting range before getting visibility
+                     double d1 = entity.distanceToSqr(target.getX(), target.getY(), target.getZ());
++                    double followRangeRaw = this.range;
++                    if (d1 > followRangeRaw * followRangeRaw) {
++                        return false;
++                    }
++                    double d = this.testInvisible ? target.getVisibilityPercent(entity) : 1.0;
++                    double max = Math.max(followRangeRaw * d, 2.0);
++                    // OmniPaper end - Airplane - check targeting range before getting visibility
+                     if (d1 > max * max) {
+                         return false;
+                     }
+diff --git a/net/minecraft/world/entity/monster/EnderMan.java b/net/minecraft/world/entity/monster/EnderMan.java
+index 6516cccada06a9a7d3d743929712970fe0a2b8c8..2471c6e9960c6e92f9e16b1797d3cb3910b30b30 100644
+--- a/net/minecraft/world/entity/monster/EnderMan.java
++++ b/net/minecraft/world/entity/monster/EnderMan.java
+@@ -300,11 +300,17 @@ public class EnderMan extends Monster implements NeutralMob {
+     private boolean teleport(double x, double y, double z) {
+         BlockPos.MutableBlockPos mutableBlockPos = new BlockPos.MutableBlockPos(x, y, z);
+ 
+-        while (mutableBlockPos.getY() > this.level().getMinY() && !this.level().getBlockState(mutableBlockPos).blocksMotion()) {
++        // OmniPaper start - Airplane - single chunk lookup for enderman teleport
++        net.minecraft.world.level.chunk.LevelChunk chunk = this.level().getChunkIfLoaded(mutableBlockPos);
++        if (chunk == null) {
++            return false;
++        }
++        while (mutableBlockPos.getY() > this.level().getMinY() && !chunk.getBlockState(mutableBlockPos).blocksMotion()) {
++            // OmniPaper end - Airplane - single chunk lookup for enderman teleport
+             mutableBlockPos.move(Direction.DOWN);
+         }
+ 
+-        BlockState blockState = this.level().getBlockState(mutableBlockPos);
++        BlockState blockState = chunk.getBlockState(mutableBlockPos); // OmniPaper - Airplane - single chunk lookup
+         boolean flag = blockState.blocksMotion();
+         boolean isWater = blockState.getFluidState().is(FluidTags.WATER);
+         if (flag && !isWater) {
+diff --git a/net/minecraft/world/level/levelgen/NoiseBasedChunkGenerator.java b/net/minecraft/world/level/levelgen/NoiseBasedChunkGenerator.java
+index d1068a122e5dbd5af274d0f8178ca9f5fa49f930..6b2e8d6891415b5ef78c8f6fa4a5853471328544 100644
+--- a/net/minecraft/world/level/levelgen/NoiseBasedChunkGenerator.java
++++ b/net/minecraft/world/level/levelgen/NoiseBasedChunkGenerator.java
+@@ -59,6 +59,7 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
+     private static final BlockState AIR = Blocks.AIR.defaultBlockState();
+     public final Holder<NoiseGeneratorSettings> settings;
+     private final Supplier<Aquifer.FluidPicker> globalFluidPicker;
++    private int cachedSeaLevel = Integer.MIN_VALUE; // OmniPaper - Lithium - cache world generator sea level
+ 
+     public NoiseBasedChunkGenerator(BiomeSource biomeSource, Holder<NoiseGeneratorSettings> settings) {
+         super(biomeSource);
+@@ -425,7 +426,12 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
+ 
+     @Override
+     public int getSeaLevel() {
+-        return this.settings.value().seaLevel();
++        // OmniPaper start - Lithium - cache world generator sea level
++        if (this.cachedSeaLevel == Integer.MIN_VALUE) {
++            this.cachedSeaLevel = this.settings.value().seaLevel();
++        }
++        return this.cachedSeaLevel;
++        // OmniPaper end - Lithium - cache world generator sea level
+     }
+ 
+     @Override
