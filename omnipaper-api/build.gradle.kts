@@ -3,6 +3,10 @@ plugins {
     `maven-publish`
 }
 
+
+group = "io.github.omnipaper.api"
+version = "1.21.11-R0.1-SNAPSHOT"
+
 java {
     withSourcesJar()
     withJavadocJar()
@@ -18,10 +22,21 @@ dependencies {
 }
 
 publishing {
-    publications.create<MavenPublication>("maven") {
-        groupId = project.group.toString()
-        artifactId = "omnipaper-api"
-        version = project.version.toString()
-        from(components["java"])
+    publications {
+        create<MavenPublication>("maven") {
+            groupId = project.group.toString()
+            artifactId = "omnipaper-api"
+            version = project.version.toString()
+
+            from(components["java"])
+        }
+    }
+
+
+    repositories {
+        maven {
+            name = "GitHubPagesRepo"
+            url = uri(layout.buildDirectory.dir("repo"))
+        }
     }
 }
